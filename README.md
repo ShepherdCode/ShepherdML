@@ -1,0 +1,2 @@
+# ShepherdML
+Learning Machine Learning
