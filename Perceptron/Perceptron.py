@@ -1,6 +1,8 @@
 '''
 Perceptron.
 See Charu Aggarwal chapter 1.
+Run the example:
+$ python3 Perceptron.py --train train1.csv --classify classify1.csv --alpha 0.5 --debug
 '''
 import argparse
 import traceback
@@ -22,9 +24,12 @@ class Perceptron ():
     def __init__(self):
         self.out = OutputLayer()
         self.alpha = 0
-    def setup(self,w1,w2,alpha):
+    def setup(self,w1,w2,alpha,epochs):
         self.alpha=alpha
+        self.epochs=epochs
         self.out.set_weights(w1,w2)
+    def show_weights(self):
+        return self.out.get_weights()
     def classify_one(self,x1,x2):
         (w1,w2)=self.out.get_weights()
         sum = (w1*x1)+(w2*x2)
@@ -48,14 +53,25 @@ class Perceptron ():
         self.out.adjust_weights(w1_delta,w2_delta)
         #say("adjusted W = "+str(self.out.get_weights()))
     def train(self,csvfilename):
+        for i in range(0,self.epochs):
+            # TO DO: load the file rather than re-open it
+            with open (csvfilename,"r") as csvfile:
+                reader = csv.reader(csvfile,delimiter=',')
+                for line in reader:
+                    (x1,x2,y)=line
+                    x1=float(x1)
+                    x2=float(x2)
+                    y=int(y)
+                    self.train_one(x1,x2,y)
+    def classify(self,csvfilename):
         with open (csvfilename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             for line in reader:
-                (x1,x2,y)=line
+                (x1,x2)=line
                 x1=float(x1)
                 x2=float(x2)
-                y=int(y)
-                self.train_one(x1,x2,y)
+                yhat=self.classify_one(x1,x2)
+                say("Point (%d,%d) classified %d"%(x1,x2,yhat))
 
 def say(statement):
     try:
@@ -67,8 +83,8 @@ def say(statement):
 def args_parse():
     global args
     parser = argparse.ArgumentParser(description='Linear classifier.')
-    parser.add_argument('--train', help = 'Training set filename', type=str)
-    parser.add_argument('--run', help = 'Classify data', action = 'store_true')
+    parser.add_argument('--train', help = 'Labeled set filename', type=str)
+    parser.add_argument('--classify', help = 'Unlabeled set filename', type=str)
     parser.add_argument('--alpha', help= 'Learn rate (1)', type=float, default=float(1))
     parser.add_argument('--debug', action = 'store_true')
     args = parser.parse_args()  # on error, program exits
@@ -81,15 +97,13 @@ if __name__ == '__main__':
     try:
         args_parse()
         p = Perceptron()
-        p.setup(0,0,args.alpha)
+        epochs=3 # TO DO: user parameter
+        p.setup(0,0,args.alpha,epochs)
         if args.train is not None:
             p.train(args.train)
-        if args.run:
-            result1=p.classify_one(1,1)
-            result2=p.classify_one(1,-1)
-            result3=p.classify_one(-1,1)
-            result4=p.classify_one(-1,-1)
-            print(result1,result2,result3,result4)
+            print("Trained weights: "+str(p.show_weights()))
+        if args.classify is not None:
+            p.classify(args.classify)
     except Exception as e:
         print("\nThere was an error.")
         if args.debug:
