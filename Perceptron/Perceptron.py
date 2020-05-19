@@ -4,6 +4,7 @@ See Charu Aggarwal chapter 1.
 '''
 import argparse
 import traceback
+import sys
 
 class OutputLayer ():
     def __init__(self):
@@ -26,16 +27,25 @@ class Perceptron ():
     def classify_one(self,x1,x2):
         (w1,w2)=self.out.get_weights()
         sum = (w1*x1)+(w2*x2)
+        yhat = self.activation(sum)
+        return yhat
+    def activation(self,sum):
         sign = -1
         if (sum>0):
             sign = 1
         return sign
     def train_one(self,x1,x2,y):
+        #say("initial W = "+str(self.out.get_weights()))
         yhat = self.classify_one(x1,x2)
-        loss = self.alpha*(y-yhat)
-        w1_delta = loss*x1
-        w2_delta = loss*x2
+        say("yhat = "+str(yhat))
+        loss = y-yhat
+        adj_loss = self.alpha*loss
+        say("adj loss = "+str(adj_loss))
+        w1_delta = adj_loss*x1
+        w2_delta = adj_loss*x2
+        say("delta = "+str((w1_delta,w2_delta)))
         self.out.adjust_weights(w1_delta,w2_delta)
+        say("adjusted W = "+str(self.out.get_weights()))
 
 def say(statement):
     try:
@@ -64,6 +74,9 @@ if __name__ == '__main__':
         p.setup(0,0,args.alpha)
         if args.train:
             p.train_one(1,1,1)
+            p.train_one(1,-1,1)
+            p.train_one(-1,1,-1)
+            p.train_one(-1,-1,-1)
         if args.run:
             result1=p.classify_one(1,1)
             result2=p.classify_one(1,-1)
