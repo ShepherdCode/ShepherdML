@@ -37,6 +37,7 @@ def args_parse():
     parser = argparse.ArgumentParser(description='Linear classifier.')
     parser.add_argument('--train', help = 'Learn parameters', action = 'store_true')
     parser.add_argument('--run', help = 'Classify data', action = 'store_true')
+    parser.add_argument('--alpha', help= 'Learn rate (1)', type=float, default=float(1))
     parser.add_argument('--debug', action = 'store_true')
     args = parser.parse_args()  # on error, program exits
 
@@ -51,7 +52,7 @@ if __name__ == '__main__':
         if args.train:
             pass
         elif args.run:
-            p.setup(0,0,1)
+            p.setup(0,0,args.alpha)
             result=p.classify(1,1)
             print(result)
     except Exception as e:
