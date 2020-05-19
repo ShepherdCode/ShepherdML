@@ -13,6 +13,9 @@ class OutputLayer ():
         self.w2=w2
     def get_weights(self):
         return (self.w1,self.w2)
+    def adjust_weights(self,w1_delta,w2_delta):
+        self.w1 += w1_delta
+        self.w2 += w2_delta
 class Perceptron ():
     def __init__(self):
         self.out = OutputLayer()
@@ -20,10 +23,16 @@ class Perceptron ():
     def setup(self,w1,w2,alpha):
         self.alpha=alpha
         self.out.set_weights(w1,w2)
-    def classify(self,x1,x2):
+    def classify_one(self,x1,x2):
         (w1,w2)=self.out.get_weights()
         sum = (w1*x1)+(w2*x2)
         return sum
+    def train_one(self,x1,x2,y):
+        yhat = self.classify_one(x1,x2)
+        loss = self.alpha*(y-yhat)
+        w1_delta = loss*x1
+        w2_delta = loss*x2
+        self.out.adjust_weights(w1_delta,w2_delta)
 
 def say(statement):
     try:
@@ -49,11 +58,11 @@ if __name__ == '__main__':
     try:
         args_parse()
         p = Perceptron()
+        p.setup(0,0,args.alpha)
         if args.train:
-            pass
-        elif args.run:
-            p.setup(0,0,args.alpha)
-            result=p.classify(1,1)
+            p.train_one(1,1,1)
+        if args.run:
+            result=p.classify_one(1,1)
             print(result)
     except Exception as e:
         print("\nThere was an error.")
