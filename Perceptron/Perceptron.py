@@ -5,6 +5,7 @@ See Charu Aggarwal chapter 1.
 import argparse
 import traceback
 import sys
+import csv
 
 class OutputLayer ():
     def __init__(self):
@@ -37,15 +38,24 @@ class Perceptron ():
     def train_one(self,x1,x2,y):
         #say("initial W = "+str(self.out.get_weights()))
         yhat = self.classify_one(x1,x2)
-        say("yhat = "+str(yhat))
+        #say("yhat = "+str(yhat))
         loss = y-yhat
         adj_loss = self.alpha*loss
-        say("adj loss = "+str(adj_loss))
+        #say("adj loss = "+str(adj_loss))
         w1_delta = adj_loss*x1
         w2_delta = adj_loss*x2
-        say("delta = "+str((w1_delta,w2_delta)))
+        #say("delta = "+str((w1_delta,w2_delta)))
         self.out.adjust_weights(w1_delta,w2_delta)
-        say("adjusted W = "+str(self.out.get_weights()))
+        #say("adjusted W = "+str(self.out.get_weights()))
+    def train(self,csvfilename):
+        with open (csvfilename,"r") as csvfile:
+            reader = csv.reader(csvfile,delimiter=',')
+            for line in reader:
+                (x1,x2,y)=line
+                x1=float(x1)
+                x2=float(x2)
+                y=int(y)
+                self.train_one(x1,x2,y)
 
 def say(statement):
     try:
@@ -57,7 +67,7 @@ def say(statement):
 def args_parse():
     global args
     parser = argparse.ArgumentParser(description='Linear classifier.')
-    parser.add_argument('--train', help = 'Learn parameters', action = 'store_true')
+    parser.add_argument('--train', help = 'Training set filename', type=str)
     parser.add_argument('--run', help = 'Classify data', action = 'store_true')
     parser.add_argument('--alpha', help= 'Learn rate (1)', type=float, default=float(1))
     parser.add_argument('--debug', action = 'store_true')
@@ -72,11 +82,8 @@ if __name__ == '__main__':
         args_parse()
         p = Perceptron()
         p.setup(0,0,args.alpha)
-        if args.train:
-            p.train_one(1,1,1)
-            p.train_one(1,-1,1)
-            p.train_one(-1,1,-1)
-            p.train_one(-1,-1,-1)
+        if args.train is not None:
+            p.train(args.train)
         if args.run:
             result1=p.classify_one(1,1)
             result2=p.classify_one(1,-1)
