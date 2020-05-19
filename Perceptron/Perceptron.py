@@ -26,7 +26,10 @@ class Perceptron ():
     def classify_one(self,x1,x2):
         (w1,w2)=self.out.get_weights()
         sum = (w1*x1)+(w2*x2)
-        return sum
+        sign = -1
+        if (sum>0):
+            sign = 1
+        return sign
     def train_one(self,x1,x2,y):
         yhat = self.classify_one(x1,x2)
         loss = self.alpha*(y-yhat)
@@ -62,8 +65,11 @@ if __name__ == '__main__':
         if args.train:
             p.train_one(1,1,1)
         if args.run:
-            result=p.classify_one(1,1)
-            print(result)
+            result1=p.classify_one(1,1)
+            result2=p.classify_one(1,-1)
+            result3=p.classify_one(-1,1)
+            result4=p.classify_one(-1,-1)
+            print(result1,result2,result3,result4)
     except Exception as e:
         print("\nThere was an error.")
         if args.debug:
