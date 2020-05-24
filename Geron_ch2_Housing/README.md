@@ -25,13 +25,16 @@ Note that `ipython nbconvert` is deprecated.
 Enhanced python interpreter.
 See ipython.readthedocs.io.
 Some ipython features have since been added to the standard python interpreter.
+
 IPython supports parallel computing.
 IPython runs its own python kernel.
 IPython adds meta commands
+
 * Get help with ?thing and ??thing
 * Store data with %store
 * Change directory with %cd dir
 * Execute system commands with !!cmd or var=!cmd
+
 IPython magic refers to a set of convenience functions.
 Line magic looks like %cmd and operate on this line only.
 Cell magic looks like %%cmd and involve subsequent lines.
@@ -40,6 +43,7 @@ Cell magic looks like %%cmd and involve subsequent lines.
 This library draws plots.
 Its frontend is the user or the python code.
 Its backend is settable: new window, postscript, Jupyter.
+
 The python command `get_ipython().run_line_magic('matplotlib', 'inline')` is used in case the code runs in standard python.
 The ipython equivalent `%matplotlib inline` means
 the output of plotting commands will be displayed inline
@@ -50,10 +54,13 @@ with Jupyter, the image will get encoded in the notebook too.
 See jupyter.readthedocs.io.
 Extension to ipython.
 Jupyter is a metapackage of packages.
+
 * Jupyter notebook package is a frontend to ipython kernel.
+
 Saves sessions to files called notebooks.
 Notebook native format is JSON.
 The nbconvert tool converts notebook to python, HTML, LaTeX.
+
 * jupyter_console terminal application
 * jupyterhub for collaboration
 * nbgrader for creating and grading homework
