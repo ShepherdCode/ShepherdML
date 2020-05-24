@@ -2,7 +2,7 @@
 Hands-On Machine Learning by Aurelien Geron.\
 Chapter 2 - Predict housing prices.
 
-## Getting around
+## Installation
 
 Update (use -U for update):\
 `pip install -U jupyter ipython`\
@@ -19,7 +19,7 @@ Convert jupyter notebook (\*.ipynb) to python (\*.py):\
 `jupyter nbconvert --to script Housing5.ipynb`\
 Note that `ipython nbconvert` is deprecated.
 
-## Explanations
+## Components
 
 ### IPython
 Enhanced python interpreter.
@@ -34,7 +34,7 @@ IPython adds meta commands
 * Store data with `%store`
 * Change directory with `%cd dir`
 * Execute system commands with `!!cmd` or `var=!cmd`
-\
+
 IPython magic refers to a set of convenience functions.
 Line magic looks like %cmd and operate on this line only.
 Cell magic looks like %%cmd and involve subsequent lines.
@@ -43,7 +43,7 @@ Cell magic looks like %%cmd and involve subsequent lines.
 This library draws plots.
 Its frontend is the user or the python code.
 Its backend is settable: new window, postscript, Jupyter.
-\
+
 The python command `get_ipython().run_line_magic('matplotlib', 'inline')` is used in case the code runs in standard python.
 The ipython equivalent `%matplotlib inline` means
 the output of plotting commands will be displayed inline
@@ -62,3 +62,50 @@ The nbconvert tool converts notebook to python, HTML, LaTeX.
 * jupyter_console terminal application
 * jupyterhub for collaboration
 * nbgrader for creating and grading homework
+
+### Pandas
+Python library.
+
+* [DataFrame](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html)
+Can hold dict, list, list of dict, etc.
+Can usually incorporate column nmes.
+Support for I/O from dict, csv file, numpy ndarray.
+Hundreds of methods like describe(), groupby(), kurtosis().
+We use cut() with bins as parameter.
+
+### SKLearn
+Machine Learning library.
+We use OneHotEncoder, StratifiedShuffleSplit,
+LinearRegression, mean_squared_error, DecisionTreeRegressor,
+SimpleImputer.
+
+## Pipeline
+Partition learning and validation data.
+Partition learning data int train and test data.
+* dataframe = pandas.read_csv()
+* histogram = pandas.cut(dataframe, bins=, labels=)
+* splitter = StratifiedShuffleSplit(test+size=, random_state=)\
+* splitter.split() iterates (train,test) pairs
+* Evaluate stratification, find undifferentiated features
+* for each (train,test), drop() useless columns
+Data preparation.
+* plot(scatter,longitude,lattitude) to get map!
+* plot(colorbar) to color by housing price
+* Measure correlation with dataframe.corr().sort_values()
+* 4x4 array of scatter plots for 4x4 different features
+* Plot again to zoom in on selected features.
+* Temporarily separate categoric and numeric data.
+* Use SimpleImputer.fit() to fix numeric missing values.
+* Apply OneHotEncoder to one feature: ocean proximity.
+* Encoder.fit_transform(categoric) builds sparse array.
+* Recombine numeric and categoric data into one dataframe.
+Learning
+* LinearRegression.fit(prepared_data,labels)
+* lin_reg.predict() on a subset of data
+* lin_reg.coef_ to view coefficient per feature (want positive)
+Validation
+* pred.mean_squared_error(labels,predictions)
+* cross_val_score(lin_reg,prepared_data,lables,cost_func)
+Compare to other models
+* DecisionTreeRegressor
+* cross_val_score()
