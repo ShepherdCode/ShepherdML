@@ -81,6 +81,7 @@ SimpleImputer.
 
 ## Pipeline
 Partition learning and validation data.
+
 Partition learning data int train and test data.
 * dataframe = pandas.read_csv()
 * histogram = pandas.cut(dataframe, bins=, labels=)
@@ -88,6 +89,7 @@ Partition learning data int train and test data.
 * splitter.split() iterates (train,test) pairs
 * Evaluate stratification, find undifferentiated features
 * for each (train,test), drop() useless columns
+
 Data preparation.
 * plot(scatter,longitude,lattitude) to get map!
 * plot(colorbar) to color by housing price
@@ -99,13 +101,16 @@ Data preparation.
 * Apply OneHotEncoder to one feature: ocean proximity.
 * Encoder.fit_transform(categoric) builds sparse array.
 * Recombine numeric and categoric data into one dataframe.
+
 Learning
 * LinearRegression.fit(prepared_data,labels)
 * lin_reg.predict() on a subset of data
 * lin_reg.coef_ to view coefficient per feature (want positive)
+
 Validation
 * pred.mean_squared_error(labels,predictions)
 * cross_val_score(lin_reg,prepared_data,lables,cost_func)
+
 Compare to other models
 * DecisionTreeRegressor
 * cross_val_score()
