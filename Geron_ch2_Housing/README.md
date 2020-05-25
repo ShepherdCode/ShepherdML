@@ -1,6 +1,7 @@
 # Machine Learning - Housing
 Hands-On Machine Learning by Aurelien Geron.\
-Chapter 2 - Predict housing prices.
+Chapter 2 - End-to-End Project with California housing prices.
+Housing6 is the latest version.
 
 ## Installation
 
