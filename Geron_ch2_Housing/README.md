@@ -4,7 +4,7 @@ Chapter 2 - End-to-End Project with California housing prices.
 
 Housing 1-6 was first try. Followed book. Didn't understand it all.
 
-Step 1-5 was second try. Experimented more. Changed things.
+Step 1-6 was second try. Experimented more. Changed things.
 
 ## Installation
 
