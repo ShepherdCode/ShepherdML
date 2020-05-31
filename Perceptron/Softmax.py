@@ -261,6 +261,9 @@ if __name__ == '__main__':
     """
     Command line invocation:
     $ python3 Softmax.py --help
+    $ python3 Softmax.py --example regression
+    $ python3 Softmax.py --train regression.labeled.csv --classify regression.unlabeled.csv
+    # As yet, no means of saving the trained weights, so train & classify.
     """
     try:
         args_parse()
