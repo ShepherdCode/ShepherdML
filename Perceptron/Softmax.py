@@ -96,9 +96,27 @@ class Multinomial_Logistic_Regression ():
         say("Load class names for %d instances"%len(instances))
         self.set_class_names(instances)
         for epoch in range(0,self.epochs):
-            print("epoch %d..."%epoch)
+            say("epoch %d..."%epoch)
             for instance in instances:
-                given_class_name = instance[self.dimensions+1]
+                say("instance ..."+str(instance))
+                yhat = self.classify_instance(instance)
+                y = instance[self.dimensions+1]  # last field = class label
+                self.update_weights(instance,y,yhat)
+    def update_weights(self,instance,y,yhat):
+        alpha = self.alpha
+        for r in range(0,self.classes):
+            weight_vector = self.weight_vectors[r]
+            output_node = self.output_nodes[r]
+            prob_of_r = output_node.get_output()
+            for d in range(0,self.dimensions):
+                wr = weight_vector.get(d)
+                xd = float(instance[d+1])  # TO DO: create a class for instance!
+                if (y==yhat):
+                    wr = wr + alpha*xd*(1.0-prob_of_r)
+                else:
+                    wr = wr + alpha*(0.0-xd)*(prob_of_r)
+                weight_vector.set(d,wr)
+        print("Update given %s %s"%(y,yhat))
     def classify_file(self,filename):
         say("CLASSIFY")
         say("Assume weights are trained or initialized")
@@ -141,7 +159,8 @@ class Multinomial_Logistic_Regression ():
             prob = output_node.get_output()
             if (prob > max_prob):
                 best_class = c
-        return best_class
+        best_class_name = self.get_class_name(best_class)
+        return best_class_name
     def get_class_name(self,classnum):
         output_node = self.output_nodes[classnum]
         classname = output_node.get_class()
@@ -160,11 +179,11 @@ def create_sample_data(prefix):
         writer = csv.writer(csvfile,delimiter=',')
         writer.writerow(["n","x1","x2","x3","x4","x5","class"])
         writer.writerow([1,1.3,1.0,1.2,1.1,1.4,"one"])
-        writer.writerow([1,1.3,1.0,1.2,1.1,1.4,"one"])
-        writer.writerow([2,2.3,2.0,2.2,2.1,2.4,"two"])
-        writer.writerow([2,2.3,2.0,2.2,2.1,2.4,"two"])
-        writer.writerow([3,3.3,3.0,3.2,3.1,3.4,"three"])
-        writer.writerow([3,3.3,3.0,3.2,3.1,3.4,"three"])
+        writer.writerow([2,1.3,1.0,1.2,1.1,1.4,"one"])
+        writer.writerow([3,2.3,2.0,2.2,2.1,2.4,"two"])
+        writer.writerow([4,2.3,2.0,2.2,2.1,2.4,"two"])
+        writer.writerow([5,3.3,3.0,3.2,3.1,3.4,"three"])
+        writer.writerow([6,3.3,3.0,3.2,3.1,3.4,"three"])
     testing_file=prefix+".unlabeled.csv"
     with open (testing_file,"w") as csvfile:
         writer = csv.writer(csvfile,delimiter=',')
