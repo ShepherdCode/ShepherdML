@@ -16,6 +16,7 @@ import argparse
 import traceback
 import sys
 import csv
+#from numpy import exp
 from math import exp
 
 class Vector():
@@ -23,7 +24,7 @@ class Vector():
         self.dimensions=dimensions
         self.vec = []
         for i in range(0,dimensions):
-            self.vec.append(1)  # initial guess
+            self.vec.append(0.1)  # initial guess, get overflow if set >=1
     def set(self,i,w):
         if i>=0 and i<self.dimensions:
             self.vec[i]=w
@@ -38,9 +39,14 @@ class Output_Node ():
         self.denominator=0.0
         self.name=""
     def add(self,value,same_class):
-        if same_class:
-            self.numerator=exp(value)
-        self.denominator += exp(value)
+        try:
+            if same_class:
+                self.numerator=exp(value)
+            self.denominator += exp(value)
+        except:
+            print("Exception")
+            print("Given value = %f",value)
+            raise Exception("Math error")
     def get_output(self):
         prob = self.numerator / self.denominator
         return prob
@@ -58,8 +64,8 @@ class Hidden_Node ():
         return activation
 class Multinomial_Logistic_Regression ():
     def __init__(self,epochs=3, alpha=1, dimensions=5, classes=3):
-        self.epochs=3
-        self.alpha=1
+        self.epochs=epochs
+        self.alpha=alpha
         self.dimensions=dimensions
         self.classes=classes
         self.input_layer=Vector(dimensions)
@@ -100,23 +106,26 @@ class Multinomial_Logistic_Regression ():
             for instance in instances:
                 say("instance ..."+str(instance))
                 yhat = self.classify_instance(instance)
-                y = instance[self.dimensions+1]  # last field = class label
-                self.update_weights(instance,y,yhat)
-    def update_weights(self,instance,y,yhat):
+                self.update_weights(instance)
+    def update_weights(self,instance):
         alpha = self.alpha
+        y = instance[self.dimensions+1]  # true label = last field in file
         for r in range(0,self.classes):
             weight_vector = self.weight_vectors[r]
             output_node = self.output_nodes[r]
             prob_of_r = output_node.get_output()
+            nodename = output_node.get_class()
             for d in range(0,self.dimensions):
                 wr = weight_vector.get(d)
                 xd = float(instance[d+1])  # TO DO: create a class for instance!
-                if (y==yhat):
+                if (y==nodename):
+                    print("  positive")
                     wr = wr + alpha*xd*(1.0-prob_of_r)
                 else:
-                    wr = wr + alpha*(0.0-xd)*(prob_of_r)
+                    print("  netative")
+                    wr = wr - alpha*xd*(prob_of_r)
+                #print("weight[%d][%d] = %f"%(r,d,wr))
                 weight_vector.set(d,wr)
-        print("Update given %s %s"%(y,yhat))
     def classify_file(self,filename):
         say("CLASSIFY")
         say("Assume weights are trained or initialized")
@@ -206,7 +215,9 @@ if __name__ == '__main__':
     """
     try:
         args_parse()
-        nn = Multinomial_Logistic_Regression (3,1,5,3)
+        # TO DO: get dimensions and classes from input file
+        # TO DO: get epochs and learn rate from user
+        nn = Multinomial_Logistic_Regression (2,1,5,3)
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
