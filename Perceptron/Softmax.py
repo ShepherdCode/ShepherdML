@@ -36,6 +36,7 @@ class Output_Node ():
     def __init__(self):
         self.numerator=0.0
         self.denominator=0.0
+        self.name=""
     def add(self,value,same_class):
         if same_class:
             self.numerator=exp(value)
@@ -43,6 +44,10 @@ class Output_Node ():
     def get_output(self):
         prob = self.numerator / self.denominator
         return prob
+    def set_class(self,name):
+        self.name = name
+    def get_class(self):
+        return self.name
 class Hidden_Node ():
     def __init__(self):
         self.sum=0
@@ -68,10 +73,25 @@ class Multinomial_Logistic_Regression ():
         for r in range(0,classes):
             self.output_nodes.append(Output_Node())
     def train(self,filename):
-        with open (csvfilename,"r") as csvfile:
+        instances=[]
+        with open (filename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
-            for epoch in range(0,self.epochs):
-                print("epoch %d"%epoch)
+            reader.__next__() # skip header
+            for instance in reader:
+                instances.append(instance)
+        c = -1
+        current_class_name = ""
+        for instance in instances:
+            given_class_name = instance[self.dimensions+1]
+            print(instance)
+            if (given_class_name != current_class_name):
+                c += 1
+                output_node = self.output_nodes[c]
+                output_node.set_class(given_class_name)
+                current_class_name = given_class_name
+                print("Class %d is %s"%(c,current_class_name))
+        for epoch in range(0,self.epochs):
+            print("epoch %d"%epoch)
     def classify(self,filename):
         say("Assume weights are trained or initialized")
         instances=[]
@@ -104,9 +124,12 @@ class Multinomial_Logistic_Regression ():
                     same_class=(c==h)
                     output_node.add(value,same_class)
             say("Output ")
+            print(instance)
             for c in range(0,self.classes):
                 output_node = self.output_nodes[c]
-                print(output_node.get_output())
+                prob = output_node.get_output()
+                classname = output_node.get_class()
+                print("%5.3f %s"%(prob,classname))
 
 def say(statement):
     try:
