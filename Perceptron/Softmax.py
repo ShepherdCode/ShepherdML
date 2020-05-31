@@ -1,14 +1,15 @@
 '''
-Perceptron.
-Single layer neural network. No hidden layer.
-One output node.
-Activation function is linear/identity for training.
-Loss function is (0-(y*yhat)).
-Gradient descent is W=W+yX[(y*yhat<0)?1:0].
-Learn rate alpha would have no effect.
-Forget rate delta (regularization) not recommended.
-Activation function is sign(W*X) for prediction. Predicts -1 or +1.
-See Charu Aggarwal chapter 1 exercise 6.
+Softmax.
+Performs multinomial logistic regression.
+Implemented as multiclass shallow NN.
+Ouputs are probabilities 0 to 1.
+One output per class r; these sum to 1.
+Output is negative log-likelihood based on posterior probability.
+Loss function is cross-entropy: neg log of true class.
+One hidden layer, one weight vector Wr per node, linear activation.
+One output node per r with softmax activation.
+Softmax: P(r|Xi)=e^(Wr*Xi)/sum(e^(WXi)) where W represents all Wr.
+See Charu Aggarwal chapter 2 exercise 6, and figure 2.5(c).
 '''
 import argparse
 import traceback
@@ -98,8 +99,7 @@ def args_parse():
 if __name__ == '__main__':
     """
     Command line invocation:
-    $ python3 Perceptron.py --help
-    $ python3 Perceptron.py --train train1.csv --classify classify1.csv --alpha 0.5 --debug
+    $ python3 Softmax.py --help
     """
     try:
         args_parse()
