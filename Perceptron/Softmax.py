@@ -20,21 +20,38 @@ import csv
 from math import exp
 
 class Vector():
-    def __init__(self,dimensions):
-        self.dimensions=dimensions
+    def __init__(self,dimension):
+        self.dimension=dimension
         self.vec = []
-        for i in range(0,dimensions):
+        for i in range(0,dimension):
             self.vec.append(0.1)  # initial guess, get overflow if set >=1
     def set(self,i,w):
-        if i>=0 and i<self.dimensions:
+        if i>=0 and i<self.dimension:
             self.vec[i]=w
     def get(self,i):
-        if i>=0 and i<self.dimensions:
+        if i>=0 and i<self.dimension:
             return self.vec[i]
     def get_dimension(self):
-        return self.dimensions
+        return self.dimension
     def __str__(self):
         return str(self.vec)
+class Instance():   # TO DO: extend vector
+    def __init__(self,dimension,aslist):
+        self.id=aslist[0]
+        self.label=None
+        self.x=[]
+        for d in range(1,dimension+1):
+            value=float(aslist[d])
+            self.x.append(value)
+        if len(aslist)>=dimension+2:
+            self.label=aslist[dimension+1]
+    def get_label(self):
+        return self.label
+    def get_id(self):
+        return self.id
+    def get_value(self,i):
+        return self.x[i]
+
 class Output_Node ():
     def __init__(self):
         self.numerator=0.0
@@ -65,25 +82,26 @@ class Hidden_Node ():
         activation = 1*self.sum   # linear activation
         return activation
 class Multinomial_Logistic_Regression ():
-    def __init__(self,epochs=3, alpha=1, dimensions=5, classes=3):
+    def __init__(self,epochs=3, alpha=1, dimension=5, classes=3):
         self.epochs=epochs
         self.alpha=alpha
-        self.dimensions=dimensions
+        self.dimension=dimension
         self.classes=classes
-        self.input_layer=Vector(dimensions)
+        self.input_layer=Vector(dimension)
         self.weight_vectors=[]
         for r in range(0,classes):  # TO DO: enable lambda functions
-            self.weight_vectors.append(Vector(dimensions))
+            self.weight_vectors.append(Vector(dimension))
         self.hidden_nodes=[]
         for r in range(0,classes):
             self.hidden_nodes.append(Hidden_Node())
         self.output_nodes=[]
         for r in range(0,classes):
             self.output_nodes.append(Output_Node())
-    def set_class_labels(self,instances):
+        self.training_instances=[]  # TO DO: rename because it also holds an unlabeled instance
+    def set_class_labels(self):
         all_labels=[]
-        for instance in instances:
-            given_label = instance[self.dimensions+1] # last column in file
+        for instance in self.training_instances:
+            given_label = instance.get_label() # last column in file
             all_labels.append(given_label)
         uniq_labels=sorted(set(all_labels))
         num_labels=len(uniq_labels)
@@ -97,27 +115,27 @@ class Multinomial_Logistic_Regression ():
             this_label = uniq_labels[c]
             output_node.set_class(this_label)
     def load_instances(self,filename):
-        instances=[]
+        self.training_instances=[]
         with open (filename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             reader.__next__() # skip header
-            for instance in reader:
-                instances.append(instance)
-        return instances
+            for oneline in reader:
+                instance = Instance(self.dimension,oneline)
+                self.training_instances.append(instance)
     def train_file(self,filename):
         say("TRAIN")
         if (args.debug):
             self.show_all_weights()
-        instances=self.load_instances(filename)
-        say("Load class names for %d instances"%len(instances))
-        self.set_class_labels(instances)
+        self.load_instances(filename)
+        say("Load class names for %d instances"%len(self.training_instances))
+        self.set_class_labels()
         for epoch in range(0,self.epochs):
             say("EPOCH %d..."%epoch)
-            for instance in instances:
+            for instance in self.training_instances:
                 yhat = self.classify_instance(instance)
                 say("instance "+str(instance)+" classified as "+yhat)
                 self.show_all_output_values()
-                print("update weights...")
+                say("update weights...")
                 self.update_weights(instance)
                 if (args.debug):
                     self.show_all_weights()
@@ -128,16 +146,16 @@ class Multinomial_Logistic_Regression ():
             print(weight_vector)
     def update_weights(self,instance):
         alpha = self.alpha
-        y = instance[self.dimensions+1]  # true label = last field in file
+        y = instance.get_label()
         say("true class is "+y)
         for r in range(0,self.classes):
             weight_vector = self.weight_vectors[r]
             output_node = self.output_nodes[r]
             prob_of_r = output_node.get_output()
             nodename = output_node.get_class()
-            for d in range(0,self.dimensions):
+            for d in range(0,self.dimension):
                 wr = weight_vector.get(d)
-                xd = float(instance[d+1])  # TO DO: create a class for instance!
+                xd = instance.get_value(d)
                 if (y==nodename):
                     wr = wr + alpha*xd*(1.0-prob_of_r)
                 else:
@@ -146,8 +164,8 @@ class Multinomial_Logistic_Regression ():
     def classify_file(self,filename):
         say("CLASSIFY")
         say("Assume weights are trained or initialized")
-        instances = self.load_instances(filename)
-        for instance in instances:
+        self.load_instances(filename)
+        for instance in self.training_instances:
             prediction=self.classify_instance(instance)
             print("input: "+str(instance)+" prediction: "+prediction)
             if (args.debug):
@@ -159,14 +177,14 @@ class Multinomial_Logistic_Regression ():
             classname = output_node.get_class()
             print("%f %s"%(prob,classname))
     def classify_instance(self,instance):
-        say("Classify instance "+instance[0])
-        for i in range(0,self.dimensions):
-            xi = float(instance[i+1])  # in file, pos 0 is instance number
+        say("Classify instance "+instance.get_id())
+        for i in range(0,self.dimension):
+            xi = instance.get_value(i)
             self.input_layer.set(i,xi)
         for r in range(0,self.classes):
             hidden_node = self.hidden_nodes[r]
             weight_vector = self.weight_vectors[r]
-            for d in range(0,self.dimensions):
+            for d in range(0,self.dimension):
                 xi = self.input_layer.get(d)
                 wi = weight_vector.get(d)
                 wx = wi * xi
@@ -215,7 +233,7 @@ def create_sample_data(prefix):
     with open (testing_file,"w") as csvfile:
         writer = csv.writer(csvfile,delimiter=',')
         writer.writerow(["n","x1","x2","x3","x4","x5"])
-        writer.writerow([1,2.5,2.1,2.1,2.1,2.0])
+        writer.writerow([7,2.0,2.1,2.1,2.1,2.0])
 
 def args_parse():
     global args
@@ -233,9 +251,9 @@ if __name__ == '__main__':
     """
     try:
         args_parse()
-        # TO DO: get dimensions and classes from input file
+        # TO DO: get dimension and classes from input file
         # TO DO: get epochs and learn rate from user
-        nn = Multinomial_Logistic_Regression (1,1,5,3)
+        nn = Multinomial_Logistic_Regression (5,1,5,3)
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
