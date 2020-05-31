@@ -72,64 +72,80 @@ class Multinomial_Logistic_Regression ():
         self.output_nodes=[]
         for r in range(0,classes):
             self.output_nodes.append(Output_Node())
-    def train(self,filename):
-        instances=[]
-        with open (filename,"r") as csvfile:
-            reader = csv.reader(csvfile,delimiter=',')
-            reader.__next__() # skip header
-            for instance in reader:
-                instances.append(instance)
+    def set_class_names(self,instances):
         c = -1
         current_class_name = ""
         for instance in instances:
             given_class_name = instance[self.dimensions+1]
-            print(instance)
             if (given_class_name != current_class_name):
                 c += 1
                 output_node = self.output_nodes[c]
                 output_node.set_class(given_class_name)
                 current_class_name = given_class_name
-                print("Class %d is %s"%(c,current_class_name))
-        for epoch in range(0,self.epochs):
-            print("epoch %d"%epoch)
-    def classify(self,filename):
-        say("Assume weights are trained or initialized")
+    def load_instances(self,filename):
         instances=[]
-        say("Load instances from "+filename)
         with open (filename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             reader.__next__() # skip header
             for instance in reader:
                 instances.append(instance)
+        return instances
+    def train_file(self,filename):
+        say("TRAIN")
+        instances=self.load_instances(filename)
+        say("Load class names for %d instances"%len(instances))
+        self.set_class_names(instances)
+        for epoch in range(0,self.epochs):
+            print("epoch %d..."%epoch)
+            for instance in instances:
+                given_class_name = instance[self.dimensions+1]
+    def classify_file(self,filename):
+        say("CLASSIFY")
+        say("Assume weights are trained or initialized")
+        instances = self.load_instances(filename)
         for instance in instances:
-            say("Classify instance "+instance[0])
-            for i in range(0,self.dimensions):
-                xi = float(instance[i+1])
-                self.input_layer.set(i,xi)
-            say("Compute hidden layer values ")
-            for r in range(0,self.classes):
-                hidden_node = self.hidden_nodes[r]
-                weight_vector = self.weight_vectors[r]
-                for d in range(0,self.dimensions):
-                    xi = self.input_layer.get(d)
-                    wi = weight_vector.get(d)
-                    wx = wi * xi
-                    hidden_node.add(wx)
-            say("Compute output layer values ")
-            for c in range(0,self.classes):
-                output_node = self.output_nodes[c]
-                for h in range (0,self.classes):
-                    hidden_node = self.hidden_nodes[h]
-                    value = hidden_node.get_output()
-                    same_class=(c==h)
-                    output_node.add(value,same_class)
-            say("Output ")
-            print(instance)
-            for c in range(0,self.classes):
-                output_node = self.output_nodes[c]
-                prob = output_node.get_output()
-                classname = output_node.get_class()
-                print("%5.3f %s"%(prob,classname))
+            self.classify_instance(instance)
+        say("Show output nodes ")
+        print(instance)
+        for c in range(0,self.classes):
+            output_node = self.output_nodes[c]
+            prob = output_node.get_output()
+            classname = output_node.get_class()
+            print("%5.3f %s"%(prob,classname))
+    def classify_instance(self,instance):
+        say("Classify instance "+instance[0])
+        for i in range(0,self.dimensions):
+            xi = float(instance[i+1])
+            self.input_layer.set(i,xi)
+        say("Compute hidden layer values ")
+        for r in range(0,self.classes):
+            hidden_node = self.hidden_nodes[r]
+            weight_vector = self.weight_vectors[r]
+            for d in range(0,self.dimensions):
+                xi = self.input_layer.get(d)
+                wi = weight_vector.get(d)
+                wx = wi * xi
+                hidden_node.add(wx)
+        say("Compute output layer values ")
+        for c in range(0,self.classes):
+            output_node = self.output_nodes[c]
+            for h in range (0,self.classes):
+                hidden_node = self.hidden_nodes[h]
+                value = hidden_node.get_output()
+                same_class=(c==h)
+                output_node.add(value,same_class)
+        best_class = -1
+        max_prob = 0
+        for c in range(0,self.classes):
+            output_node = self.output_nodes[c]
+            prob = output_node.get_output()
+            if (prob > max_prob):
+                best_class = c
+        return best_class
+    def get_class_name(self,classnum):
+        output_node = self.output_nodes[classnum]
+        classname = output_node.get_class()
+        return classname
 
 def say(statement):
     try:
@@ -175,9 +191,9 @@ if __name__ == '__main__':
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
-            nn.train(args.train)
+            nn.train_file(args.train)
         if args.classify is not None:
-            nn.classify(args.classify)
+            nn.classify_file(args.classify)
     except Exception as e:
         print("\nThere was an error.")
         if args.debug:
