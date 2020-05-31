@@ -119,26 +119,25 @@ class Multinomial_Logistic_Regression ():
                 wr = weight_vector.get(d)
                 xd = float(instance[d+1])  # TO DO: create a class for instance!
                 if (y==nodename):
-                    print("  positive")
                     wr = wr + alpha*xd*(1.0-prob_of_r)
                 else:
-                    print("  netative")
                     wr = wr - alpha*xd*(prob_of_r)
-                #print("weight[%d][%d] = %f"%(r,d,wr))
                 weight_vector.set(d,wr)
     def classify_file(self,filename):
         say("CLASSIFY")
         say("Assume weights are trained or initialized")
         instances = self.load_instances(filename)
         for instance in instances:
-            self.classify_instance(instance)
-        say("Show output nodes ")
-        print(instance)
+            prediction=self.classify_instance(instance)
+            print("input: "+str(instance)+" prediction: "+prediction)
+            if (args.debug):
+                self.show_all_output_values()
+    def show_all_output_values(self):
         for c in range(0,self.classes):
             output_node = self.output_nodes[c]
             prob = output_node.get_output()
             classname = output_node.get_class()
-            print("%5.3f %s"%(prob,classname))
+            print("%10.7f %s"%(prob,classname))
     def classify_instance(self,instance):
         say("Classify instance "+instance[0])
         for i in range(0,self.dimensions):
@@ -217,7 +216,7 @@ if __name__ == '__main__':
         args_parse()
         # TO DO: get dimensions and classes from input file
         # TO DO: get epochs and learn rate from user
-        nn = Multinomial_Logistic_Regression (2,1,5,3)
+        nn = Multinomial_Logistic_Regression (1,1,5,3)
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
