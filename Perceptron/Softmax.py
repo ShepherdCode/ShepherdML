@@ -266,7 +266,7 @@ if __name__ == '__main__':
         args_parse()
         # TO DO: get dimension and classes from input file
         # TO DO: get epochs and learn rate from user
-        nn = Multinomial_Logistic_Regression (1,0.1,5,3)
+        nn = Multinomial_Logistic_Regression (10,0.1,5,3)
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
