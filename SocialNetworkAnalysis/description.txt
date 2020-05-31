@@ -1,0 +1,100 @@
+Student: Jason Miller
+
+Software Description
+====================
+AnalyzeSocialMedia is a program to analyze Twitter data.
+This program was written in Python 3.7.4.
+This program uses 3rd party libraries including python-twitter and nltk.
+This program can download data from the Twitter.com API.
+Source: https://github.com/ShepherdCode/GraphGraph/tree/master/Python
+This program will connect to Twitter.com if tweets.csv does not exist.
+This program will re-use tweets.csv if it already exists.
+There are 2 optional command-line parameters:
+    hashtag (default=ComputerScience),
+    count (default=3000).
+
+Lessons Learned from Word Analysis
+==================================
+    We downloaded and analyzed tweets with hashtag ComputerScience.
+We downloaded 3000 tweets but had 1493 after filtering retweets.
+We generated a word frequency histogram in the frequency.csv file.
+Not surprisingly, the hashtag itself was most frequent.
+Next most frequent words refer to practice: coding, programming, developer.
+    Python is the language most frequently tweeted about.
+We see 126 python + 63 Python + 18 other variants.
+We see 79 javascript + 12 JavaScript + 6 other variants excluding Java.
+    Lemmatizing can leave many variants of the same noun.
+For example, we output python, Python, cpython, pythoncode, pythonlanguage.
+Perhaps other software tools could cluster words like these.
+It might help to convert all inputs to lowercase.
+We saw that the nltk stopword filter removed 'the' but left 'The'.
+    Stemming words can obscure their meaning.
+The stemmed tokens are in the cleantokens.csv file.
+Note that 'developer' and 'developing' were stemmed to 'develop'.
+In contrast, lemmatizing left both original words as tokens.
+    Hashtag filtering was imperfect.
+Our word frequency includes 857 computerscience + 585 ComputerScience.
+That adds to 1442, leaving 51 tweets without the hashtag.
+Indeed, we have tweets like this one that lack the hashtag:
+1199280601968369664 PaulOwenNY "This. https://t.co/7dXFqKrjV5"
+The bug might be in the Twitter API, python-twitter, or our use of those.
+
+Lessons Learned from Top User Analysis
+======================================
+There seem to be two classes of top user.
+     Prolific Tweeters: 4 of 10 made our list with 27 or more tweets.
+     Efficient Tweeters: 6 of 10 made our list with 6 or fewer tweets.
+Top users include organizations like arXiv.org, WomenWhoCode.
+Top users include companies like RedHat, Deep__AI.
+
+Limitations
+===========
+   Our program could fail to connect to the Twitter API.
+Our program uses hard coded access tokens for a specific Twitter account.
+The tokens came with a free, limited-access, developer account.
+The tokens could expire and the account could get locked from overuse.
+For this reason, the program can work in off-line mode.
+The program connects to Twitter if tweets.csv does not exist.
+If tweets.csv does exist, the program loads from that file instead.
+   Our retweet filter is inefficient and inexact.
+Our client-side filter discards data after downloading it.
+The filter discards tweets that happen to start with "RT ".
+It would not filter manual retweets that did not start with "RT ".
+We searched for but did not find better ways with the python-twitter API.
+   Our program outputs short words despite the short word filter.
+We see short words like 'cs' in our frequency.csv output.
+We verified that the program does filter 'cs' from the input stream.
+We believe short words were re-introduced by the stem and lemma process.
+
+Alignment to Homework Objectives
+================================
+1. Write a program.
+     See AnalyzeSocialMedia.py
+1.a. Connect to Twitter API.
+     Use with python-twitter library.
+     Use access tokens hard coded in NotForGitHub.py
+1.b. Get 280-char text. Exclude retweets.
+     Open the connection with tweet_mode='extended'.
+     Remove tweets starting with 'RT '.
+1.b.i Fetch at least 1000 English tweets by hashtag.
+     Use GetSearch() with parameters 'term' and 'lang'.
+     Ask for 3000 tweets to compensate for retweet filtering.
+1.c. Write tweets.csv with encoding='utf-8' and header line.
+     Done. Also replace all newlines with spaces from the text field.
+     Fields for ID, date, screen name, #retweets, #favorites, full text.
+1.d. Remove URLs, emoji, etc.
+     Done using the given clean_text() routine with typo fixed.
+     Also compress multiple spaces to one space.
+1.e. Remove short words and stop words
+     Code removes words < 3 letters and stop words as defined by nltk.
+     Note some short words get re-introduced by stemming & lemmatization.
+1.f. Replace words with stems.
+     Code uses nltk PorterStemmer(). Replaces developer with develop.
+1.g. Alternately replace words with lemmas.
+     Code uses nltk Lemmatizer. Leaves developer as a token.
+1.h. Write text, tokens, stems, and lemmas to CSV file.
+     See cleantokens.csv file.
+1.i. Write lemma frequency table to CSF file.
+     See frequency.csv file.
+1.j.ii. Social network analysis ranks users by engagements.
+     See sna.csv file.

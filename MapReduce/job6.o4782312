@@ -1,0 +1,19 @@
+START AT Thu Nov  7 17:07:10 EST 2019
+Numbers=11 Workers=4 ChunkSize=2 NumLeftovers=3 StartLeftovers=8
+Numbers=11 Workers=4 ChunkSize=2 NumLeftovers=3 StartLeftovers=8
+Worker 0: Array size 11  [0]=303164176 [1]=1317231065 [2]=257088873 [3]=340092364 [4]=1659743820 [5]=350948872 [6]=1811559819 [7]=89095019 [8]=444699022 [9]=785032618 [10]=1002339817
+MASTER SAYS: ArraySize 11, True max = 1811559819.
+Numbers=11 Workers=4 ChunkSize=2 NumLeftovers=3 StartLeftovers=8
+Numbers=11 Workers=4 ChunkSize=2 NumLeftovers=3 StartLeftovers=8
+Worker 0: Array size 2  [0]=303164176 [1]=1317231065
+Worker 0 says: local max = 1317231065.
+Worker 1: Array size 2  [0]=257088873 [1]=340092364
+Worker 1 says: local max = 340092364.
+Worker 2: Array size 2  [0]=1659743820 [1]=350948872
+Worker 2 says: local max = 1659743820.
+Worker 3: Array size 2  [0]=1811559819 [1]=89095019
+Worker 3 says: local max = 1811559819.
+Worker 0: Array size 7  [0]=1317231065 [1]=340092364 [2]=1659743820 [3]=1811559819 [4]=444699022 [5]=785032618 [6]=1002339817
+MASTER says: global max = 1811559819.
+SUCCESS!
+FINISH AT Thu Nov  7 17:07:10 EST 2019

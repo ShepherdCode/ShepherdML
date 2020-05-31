@@ -1,0 +1,22 @@
+# Student: Jason Miller
+
+# standard python libraries
+sys
+os
+json
+csv
+
+# twitter - the twitter-python package
+$ pip3 install python-twitter
+$ python3
+>>> import twitter
+>>> quit()
+
+# nltk - the natural language processing toolkit plus resource files
+$ pip3 install nltk
+$ python3
+>>> import nltk
+>>> nltk.download('stopwords')
+>>> nltk.download('punkt')
+>>> nltk.download('wordnet')
+>>> quit()

@@ -1,0 +1,1862 @@
+{
+    "created_at": "Mon Nov 25 18:41:35 +0000 2019",
+    "id": 1199035417917571074,
+    "id_str": "1199035417917571074",
+    "full_text": "Hey Twitter :)\n#newtotwitter \n#twitter\n#Programmer\n#ComputerScience",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        67
+    ],
+    "entities": {
+        "hashtags": [
+            {
+                "text": "newtotwitter",
+                "indices": [
+                    15,
+                    28
+                ]
+            },
+            {
+                "text": "twitter",
+                "indices": [
+                    30,
+                    38
+                ]
+            },
+            {
+                "text": "Programmer",
+                "indices": [
+                    39,
+                    50
+                ]
+            },
+            {
+                "text": "ComputerScience",
+                "indices": [
+                    51,
+                    67
+                ]
+            }
+        ],
+        "symbols": [],
+        "user_mentions": [],
+        "urls": []
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"https://mobile.twitter.com\" rel=\"nofollow\">Twitter Web App</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 1199032523050934277,
+        "id_str": "1199032523050934277",
+        "name": "Sam",
+        "screen_name": "sunrisein2020",
+        "location": "",
+        "description": "Programmer from England. Currently learning HTML, JavaScript, C# and Python. I also have a Instagram: Sunrisein2020.",
+        "url": null,
+        "entities": {
+            "description": {
+                "urls": []
+            }
+        },
+        "protected": false,
+        "followers_count": 0,
+        "friends_count": 18,
+        "listed_count": 0,
+        "created_at": "Mon Nov 25 18:30:24 +0000 2019",
+        "favourites_count": 0,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 1,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "F5F8FA",
+        "profile_background_image_url": null,
+        "profile_background_image_url_https": null,
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1199033605588234249/In7VItpb_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1199033605588234249/In7VItpb_normal.jpg",
+        "profile_link_color": "1DA1F2",
+        "profile_sidebar_border_color": "C0DEED",
+        "profile_sidebar_fill_color": "DDEEF6",
+        "profile_text_color": "333333",
+        "profile_use_background_image": true,
+        "has_extended_profile": false,
+        "default_profile": true,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "is_quote_status": false,
+    "retweet_count": 0,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+}
+{
+    "created_at": "Mon Nov 25 18:40:07 +0000 2019",
+    "id": 1199035049368150016,
+    "id_str": "1199035049368150016",
+    "full_text": "LAST CALL!  The online store for LSN Computer Science spirit wear closes on Dec 1st at 11:59pm, order NOW!  Items will be delivered to LSN.  #computerscience #tshirtThursday @lsnbroncos \n\nhttps://t.co/wAFImyin7T https://t.co/42sT7JSIYt",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        211
+    ],
+    "entities": {
+        "hashtags": [
+            {
+                "text": "computerscience",
+                "indices": [
+                    141,
+                    157
+                ]
+            },
+            {
+                "text": "tshirtThursday",
+                "indices": [
+                    158,
+                    173
+                ]
+            }
+        ],
+        "symbols": [],
+        "user_mentions": [
+            {
+                "screen_name": "lsnbroncos",
+                "name": "Lee's Summit North",
+                "id": 88707934,
+                "id_str": "88707934",
+                "indices": [
+                    174,
+                    185
+                ]
+            }
+        ],
+        "urls": [
+            {
+                "url": "https://t.co/wAFImyin7T",
+                "expanded_url": "https://lsncompscience2019.itemorder.com/sale",
+                "display_url": "lsncompscience2019.itemorder.com/sale",
+                "indices": [
+                    188,
+                    211
+                ]
+            },
+            {
+                "url": "https://t.co/42sT7JSIYt",
+                "expanded_url": "https://twitter.com/LSNCompSci/status/1193299145945239553",
+                "display_url": "twitter.com/LSNCompSci/sta\u2026",
+                "indices": [
+                    212,
+                    235
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"https://mobile.twitter.com\" rel=\"nofollow\">Twitter Web App</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 998921007665762304,
+        "id_str": "998921007665762304",
+        "name": "LSN Computer Science",
+        "screen_name": "LSNCompSci",
+        "location": "Lee's Summit, MO",
+        "description": "Computer Science & Computer Hardware classes @lsnbroncos in the @LSR7 District. \n\nOpinions expressed are my own unique mind.",
+        "url": null,
+        "entities": {
+            "description": {
+                "urls": []
+            }
+        },
+        "protected": false,
+        "followers_count": 112,
+        "friends_count": 216,
+        "listed_count": 2,
+        "created_at": "Tue May 22 13:38:22 +0000 2018",
+        "favourites_count": 2330,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": true,
+        "verified": false,
+        "statuses_count": 483,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "000000",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1086663680765247488/arGITM21_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1086663680765247488/arGITM21_normal.jpg",
+        "profile_banner_url": "https://pbs.twimg.com/profile_banners/998921007665762304/1547915972",
+        "profile_link_color": "CC0033",
+        "profile_sidebar_border_color": "000000",
+        "profile_sidebar_fill_color": "000000",
+        "profile_text_color": "000000",
+        "profile_use_background_image": false,
+        "has_extended_profile": true,
+        "default_profile": false,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "is_quote_status": true,
+    "quoted_status_id": 1193299145945239553,
+    "quoted_status_id_str": "1193299145945239553",
+    "quoted_status": {
+        "created_at": "Sat Nov 09 22:47:41 +0000 2019",
+        "id": 1193299145945239553,
+        "id_str": "1193299145945239553",
+        "full_text": "The LSN Computer Science shirts are designed and voted on by students.  Super excited to start wearing the 2019 LSN Computer Science shirt! #computerscience #spiritwear #tshirtTuesdays @lsnbroncos https://t.co/RxDgbDuybl",
+        "truncated": false,
+        "display_text_range": [
+            0,
+            196
+        ],
+        "entities": {
+            "hashtags": [
+                {
+                    "text": "computerscience",
+                    "indices": [
+                        140,
+                        156
+                    ]
+                },
+                {
+                    "text": "spiritwear",
+                    "indices": [
+                        157,
+                        168
+                    ]
+                },
+                {
+                    "text": "tshirtTuesdays",
+                    "indices": [
+                        169,
+                        184
+                    ]
+                }
+            ],
+            "symbols": [],
+            "user_mentions": [
+                {
+                    "screen_name": "lsnbroncos",
+                    "name": "Lee's Summit North",
+                    "id": 88707934,
+                    "id_str": "88707934",
+                    "indices": [
+                        185,
+                        196
+                    ]
+                }
+            ],
+            "urls": [],
+            "media": [
+                {
+                    "id": 1193299140228325377,
+                    "id_str": "1193299140228325377",
+                    "indices": [
+                        197,
+                        220
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EI9zPuQWoAE1Sco.png",
+                    "media_url_https": "https://pbs.twimg.com/media/EI9zPuQWoAE1Sco.png",
+                    "url": "https://t.co/RxDgbDuybl",
+                    "display_url": "pic.twitter.com/RxDgbDuybl",
+                    "expanded_url": "https://twitter.com/LSNCompSci/status/1193299145945239553/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "large": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "medium": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        }
+                    }
+                }
+            ]
+        },
+        "extended_entities": {
+            "media": [
+                {
+                    "id": 1193299140228325377,
+                    "id_str": "1193299140228325377",
+                    "indices": [
+                        197,
+                        220
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EI9zPuQWoAE1Sco.png",
+                    "media_url_https": "https://pbs.twimg.com/media/EI9zPuQWoAE1Sco.png",
+                    "url": "https://t.co/RxDgbDuybl",
+                    "display_url": "pic.twitter.com/RxDgbDuybl",
+                    "expanded_url": "https://twitter.com/LSNCompSci/status/1193299145945239553/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "large": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "medium": {
+                            "w": 223,
+                            "h": 272,
+                            "resize": "fit"
+                        },
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        }
+                    }
+                },
+                {
+                    "id": 1193299140224192513,
+                    "id_str": "1193299140224192513",
+                    "indices": [
+                        197,
+                        220
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EI9zPuPXkAEYa64.png",
+                    "media_url_https": "https://pbs.twimg.com/media/EI9zPuPXkAEYa64.png",
+                    "url": "https://t.co/RxDgbDuybl",
+                    "display_url": "pic.twitter.com/RxDgbDuybl",
+                    "expanded_url": "https://twitter.com/LSNCompSci/status/1193299145945239553/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "large": {
+                            "w": 229,
+                            "h": 264,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 229,
+                            "h": 264,
+                            "resize": "fit"
+                        },
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        },
+                        "medium": {
+                            "w": 229,
+                            "h": 264,
+                            "resize": "fit"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "iso_language_code": "en",
+            "result_type": "recent"
+        },
+        "source": "<a href=\"https://mobile.twitter.com\" rel=\"nofollow\">Twitter Web App</a>",
+        "in_reply_to_status_id": null,
+        "in_reply_to_status_id_str": null,
+        "in_reply_to_user_id": null,
+        "in_reply_to_user_id_str": null,
+        "in_reply_to_screen_name": null,
+        "user": {
+            "id": 998921007665762304,
+            "id_str": "998921007665762304",
+            "name": "LSN Computer Science",
+            "screen_name": "LSNCompSci",
+            "location": "Lee's Summit, MO",
+            "description": "Computer Science & Computer Hardware classes @lsnbroncos in the @LSR7 District. \n\nOpinions expressed are my own unique mind.",
+            "url": null,
+            "entities": {
+                "description": {
+                    "urls": []
+                }
+            },
+            "protected": false,
+            "followers_count": 112,
+            "friends_count": 216,
+            "listed_count": 2,
+            "created_at": "Tue May 22 13:38:22 +0000 2018",
+            "favourites_count": 2330,
+            "utc_offset": null,
+            "time_zone": null,
+            "geo_enabled": true,
+            "verified": false,
+            "statuses_count": 483,
+            "lang": null,
+            "contributors_enabled": false,
+            "is_translator": false,
+            "is_translation_enabled": false,
+            "profile_background_color": "000000",
+            "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+            "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+            "profile_background_tile": false,
+            "profile_image_url": "http://pbs.twimg.com/profile_images/1086663680765247488/arGITM21_normal.jpg",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/1086663680765247488/arGITM21_normal.jpg",
+            "profile_banner_url": "https://pbs.twimg.com/profile_banners/998921007665762304/1547915972",
+            "profile_link_color": "CC0033",
+            "profile_sidebar_border_color": "000000",
+            "profile_sidebar_fill_color": "000000",
+            "profile_text_color": "000000",
+            "profile_use_background_image": false,
+            "has_extended_profile": true,
+            "default_profile": false,
+            "default_profile_image": false,
+            "following": false,
+            "follow_request_sent": false,
+            "notifications": false,
+            "translator_type": "none"
+        },
+        "geo": null,
+        "coordinates": null,
+        "place": null,
+        "contributors": null,
+        "is_quote_status": false,
+        "retweet_count": 1,
+        "favorite_count": 1,
+        "favorited": false,
+        "retweeted": false,
+        "possibly_sensitive": false,
+        "lang": "en"
+    },
+    "retweet_count": 0,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "possibly_sensitive": false,
+    "lang": "en"
+}
+{
+    "created_at": "Mon Nov 25 18:36:00 +0000 2019",
+    "id": 1199034012586663936,
+    "id_str": "1199034012586663936",
+    "full_text": "RT @co_vein: DM me for 10% off and FREE shipping. \ud83d\ude08\n\nhttps://t.co/3ePRMNSC3k\n\n#coding #developer #programming #tech #development #programme\u2026",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        140
+    ],
+    "entities": {
+        "hashtags": [
+            {
+                "text": "coding",
+                "indices": [
+                    78,
+                    85
+                ]
+            },
+            {
+                "text": "developer",
+                "indices": [
+                    86,
+                    96
+                ]
+            },
+            {
+                "text": "programming",
+                "indices": [
+                    97,
+                    109
+                ]
+            },
+            {
+                "text": "tech",
+                "indices": [
+                    110,
+                    115
+                ]
+            },
+            {
+                "text": "development",
+                "indices": [
+                    116,
+                    128
+                ]
+            }
+        ],
+        "symbols": [],
+        "user_mentions": [
+            {
+                "screen_name": "co_vein",
+                "name": "Native Vein Co",
+                "id": 1195038580328022018,
+                "id_str": "1195038580328022018",
+                "indices": [
+                    3,
+                    11
+                ]
+            }
+        ],
+        "urls": [
+            {
+                "url": "https://t.co/3ePRMNSC3k",
+                "expanded_url": "https://soo.nr/rmpw",
+                "display_url": "soo.nr/rmpw",
+                "indices": [
+                    53,
+                    76
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"http://aaroncuddeback.com\" rel=\"nofollow\">aaroncuddeback.com</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 310897418,
+        "id_str": "310897418",
+        "name": "Aaron Cuddeback",
+        "screen_name": "AaronCuddeback",
+        "location": "Sacramento, CA",
+        "description": "Midlife Coder\nFather, Entrepreneur, CEO, Software Developer, Dreamer, Fearless.\nowner: https://t.co/YVyJ5hl4WT",
+        "url": "https://t.co/PPLLGTyfhN",
+        "entities": {
+            "url": {
+                "urls": [
+                    {
+                        "url": "https://t.co/PPLLGTyfhN",
+                        "expanded_url": "https://aaroncuddeback.com",
+                        "display_url": "aaroncuddeback.com",
+                        "indices": [
+                            0,
+                            23
+                        ]
+                    }
+                ]
+            },
+            "description": {
+                "urls": [
+                    {
+                        "url": "https://t.co/YVyJ5hl4WT",
+                        "expanded_url": "http://urbanrisedesigns.com",
+                        "display_url": "urbanrisedesigns.com",
+                        "indices": [
+                            87,
+                            110
+                        ]
+                    }
+                ]
+            }
+        },
+        "protected": false,
+        "followers_count": 10264,
+        "friends_count": 126,
+        "listed_count": 238,
+        "created_at": "Sat Jun 04 14:57:55 +0000 2011",
+        "favourites_count": 36722,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 664841,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "000000",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1046220721087688704/RidtZYBx_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1046220721087688704/RidtZYBx_normal.jpg",
+        "profile_banner_url": "https://pbs.twimg.com/profile_banners/310897418/1572929508",
+        "profile_link_color": "FF691F",
+        "profile_sidebar_border_color": "000000",
+        "profile_sidebar_fill_color": "000000",
+        "profile_text_color": "000000",
+        "profile_use_background_image": false,
+        "has_extended_profile": true,
+        "default_profile": false,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+        "created_at": "Mon Nov 25 18:31:06 +0000 2019",
+        "id": 1199032781965275139,
+        "id_str": "1199032781965275139",
+        "full_text": "DM me for 10% off and FREE shipping. \ud83d\ude08\n\nhttps://t.co/3ePRMNSC3k\n\n#coding #developer #programming #tech #development #programmer #webdesign #web #technology #html #css #javascript #website #webdevelopment #training #coder #amsterdam #ux #ui #computerscience #design https://t.co/gjTB3Y5uhu",
+        "truncated": false,
+        "display_text_range": [
+            0,
+            264
+        ],
+        "entities": {
+            "hashtags": [
+                {
+                    "text": "coding",
+                    "indices": [
+                        65,
+                        72
+                    ]
+                },
+                {
+                    "text": "developer",
+                    "indices": [
+                        73,
+                        83
+                    ]
+                },
+                {
+                    "text": "programming",
+                    "indices": [
+                        84,
+                        96
+                    ]
+                },
+                {
+                    "text": "tech",
+                    "indices": [
+                        97,
+                        102
+                    ]
+                },
+                {
+                    "text": "development",
+                    "indices": [
+                        103,
+                        115
+                    ]
+                },
+                {
+                    "text": "programmer",
+                    "indices": [
+                        116,
+                        127
+                    ]
+                },
+                {
+                    "text": "webdesign",
+                    "indices": [
+                        128,
+                        138
+                    ]
+                },
+                {
+                    "text": "web",
+                    "indices": [
+                        139,
+                        143
+                    ]
+                },
+                {
+                    "text": "technology",
+                    "indices": [
+                        144,
+                        155
+                    ]
+                },
+                {
+                    "text": "html",
+                    "indices": [
+                        156,
+                        161
+                    ]
+                },
+                {
+                    "text": "css",
+                    "indices": [
+                        162,
+                        166
+                    ]
+                },
+                {
+                    "text": "javascript",
+                    "indices": [
+                        167,
+                        178
+                    ]
+                },
+                {
+                    "text": "website",
+                    "indices": [
+                        179,
+                        187
+                    ]
+                },
+                {
+                    "text": "webdevelopment",
+                    "indices": [
+                        188,
+                        203
+                    ]
+                },
+                {
+                    "text": "training",
+                    "indices": [
+                        204,
+                        213
+                    ]
+                },
+                {
+                    "text": "coder",
+                    "indices": [
+                        214,
+                        220
+                    ]
+                },
+                {
+                    "text": "amsterdam",
+                    "indices": [
+                        221,
+                        231
+                    ]
+                },
+                {
+                    "text": "ux",
+                    "indices": [
+                        232,
+                        235
+                    ]
+                },
+                {
+                    "text": "ui",
+                    "indices": [
+                        236,
+                        239
+                    ]
+                },
+                {
+                    "text": "computerscience",
+                    "indices": [
+                        240,
+                        256
+                    ]
+                },
+                {
+                    "text": "design",
+                    "indices": [
+                        257,
+                        264
+                    ]
+                }
+            ],
+            "symbols": [],
+            "user_mentions": [],
+            "urls": [
+                {
+                    "url": "https://t.co/3ePRMNSC3k",
+                    "expanded_url": "https://soo.nr/rmpw",
+                    "display_url": "soo.nr/rmpw",
+                    "indices": [
+                        40,
+                        63
+                    ]
+                }
+            ],
+            "media": [
+                {
+                    "id": 1199032587836112897,
+                    "id_str": "1199032587836112897",
+                    "indices": [
+                        265,
+                        288
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EKPRyTAWwAEQ81u.jpg",
+                    "media_url_https": "https://pbs.twimg.com/media/EKPRyTAWwAEQ81u.jpg",
+                    "url": "https://t.co/gjTB3Y5uhu",
+                    "display_url": "pic.twitter.com/gjTB3Y5uhu",
+                    "expanded_url": "https://twitter.com/co_vein/status/1199032781965275139/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        },
+                        "medium": {
+                            "w": 1200,
+                            "h": 1200,
+                            "resize": "fit"
+                        },
+                        "large": {
+                            "w": 1588,
+                            "h": 1588,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 680,
+                            "h": 680,
+                            "resize": "fit"
+                        }
+                    }
+                }
+            ]
+        },
+        "extended_entities": {
+            "media": [
+                {
+                    "id": 1199032587836112897,
+                    "id_str": "1199032587836112897",
+                    "indices": [
+                        265,
+                        288
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EKPRyTAWwAEQ81u.jpg",
+                    "media_url_https": "https://pbs.twimg.com/media/EKPRyTAWwAEQ81u.jpg",
+                    "url": "https://t.co/gjTB3Y5uhu",
+                    "display_url": "pic.twitter.com/gjTB3Y5uhu",
+                    "expanded_url": "https://twitter.com/co_vein/status/1199032781965275139/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        },
+                        "medium": {
+                            "w": 1200,
+                            "h": 1200,
+                            "resize": "fit"
+                        },
+                        "large": {
+                            "w": 1588,
+                            "h": 1588,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 680,
+                            "h": 680,
+                            "resize": "fit"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "iso_language_code": "en",
+            "result_type": "recent"
+        },
+        "source": "<a href=\"https://www.later.com\" rel=\"nofollow\">LaterMedia</a>",
+        "in_reply_to_status_id": null,
+        "in_reply_to_status_id_str": null,
+        "in_reply_to_user_id": null,
+        "in_reply_to_user_id_str": null,
+        "in_reply_to_screen_name": null,
+        "user": {
+            "id": 1195038580328022018,
+            "id_str": "1195038580328022018",
+            "name": "Native Vein Co",
+            "screen_name": "co_vein",
+            "location": "",
+            "description": "Independent jewelry for the spirited rebel in us all\n\ud83d\udc47\n\ud83d\udc47\n\ud83d\udc8c\ud83d\udc8c\ud83d\udc8cDM Me To Make An Order Or to Ask About Products \ud83d\udc8c\ud83d\udc8c\ud83d\udc8c\n\ud83d\udc47\n\ud83d\udc47\n\ud83d\udc47\nhttps://t.co/YMMCCijixj",
+            "url": null,
+            "entities": {
+                "description": {
+                    "urls": [
+                        {
+                            "url": "https://t.co/YMMCCijixj",
+                            "expanded_url": "http://www.nativevein.com",
+                            "display_url": "nativevein.com",
+                            "indices": [
+                                118,
+                                141
+                            ]
+                        }
+                    ]
+                }
+            },
+            "protected": false,
+            "followers_count": 5,
+            "friends_count": 4,
+            "listed_count": 1,
+            "created_at": "Thu Nov 14 17:59:41 +0000 2019",
+            "favourites_count": 0,
+            "utc_offset": null,
+            "time_zone": null,
+            "geo_enabled": false,
+            "verified": false,
+            "statuses_count": 192,
+            "lang": null,
+            "contributors_enabled": false,
+            "is_translator": false,
+            "is_translation_enabled": false,
+            "profile_background_color": "F5F8FA",
+            "profile_background_image_url": null,
+            "profile_background_image_url_https": null,
+            "profile_background_tile": false,
+            "profile_image_url": "http://pbs.twimg.com/profile_images/1195038656647639040/70cBYj80_normal.jpg",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/1195038656647639040/70cBYj80_normal.jpg",
+            "profile_banner_url": "https://pbs.twimg.com/profile_banners/1195038580328022018/1573758064",
+            "profile_link_color": "1DA1F2",
+            "profile_sidebar_border_color": "C0DEED",
+            "profile_sidebar_fill_color": "DDEEF6",
+            "profile_text_color": "333333",
+            "profile_use_background_image": true,
+            "has_extended_profile": true,
+            "default_profile": true,
+            "default_profile_image": false,
+            "following": false,
+            "follow_request_sent": false,
+            "notifications": false,
+            "translator_type": "none"
+        },
+        "geo": null,
+        "coordinates": null,
+        "place": null,
+        "contributors": null,
+        "is_quote_status": false,
+        "retweet_count": 1,
+        "favorite_count": 0,
+        "favorited": false,
+        "retweeted": false,
+        "possibly_sensitive": false,
+        "lang": "en"
+    },
+    "is_quote_status": false,
+    "retweet_count": 1,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "possibly_sensitive": false,
+    "lang": "en"
+}
+{
+    "created_at": "Mon Nov 25 18:34:41 +0000 2019",
+    "id": 1199033683358806020,
+    "id_str": "1199033683358806020",
+    "full_text": "RT @Deep__AI: An \"outside the box\" solution for imbalanced data classification\nhttps://t.co/O2uynRZJMg\nby Hubert Jegierski et al.\n#Classifi\u2026",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        140
+    ],
+    "entities": {
+        "hashtags": [],
+        "symbols": [],
+        "user_mentions": [
+            {
+                "screen_name": "Deep__AI",
+                "name": "DeepAI",
+                "id": 848081553368416256,
+                "id_str": "848081553368416256",
+                "indices": [
+                    3,
+                    12
+                ]
+            }
+        ],
+        "urls": [
+            {
+                "url": "https://t.co/O2uynRZJMg",
+                "expanded_url": "https://deepai.org/publication/an-outside-the-box-solution-for-imbalanced-data-classification",
+                "display_url": "deepai.org/publication/an\u2026",
+                "indices": [
+                    79,
+                    102
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 75007226,
+        "id_str": "75007226",
+        "name": "Tapan jain",
+        "screen_name": "jainnitk",
+        "location": "Gurgaon, India",
+        "description": "Data Scientist",
+        "url": null,
+        "entities": {
+            "description": {
+                "urls": []
+            }
+        },
+        "protected": false,
+        "followers_count": 176,
+        "friends_count": 2250,
+        "listed_count": 2,
+        "created_at": "Thu Sep 17 13:07:35 +0000 2009",
+        "favourites_count": 10802,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 1835,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "C0DEED",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1130888676731265025/asiSmDop_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1130888676731265025/asiSmDop_normal.jpg",
+        "profile_link_color": "1DA1F2",
+        "profile_sidebar_border_color": "C0DEED",
+        "profile_sidebar_fill_color": "DDEEF6",
+        "profile_text_color": "333333",
+        "profile_use_background_image": true,
+        "has_extended_profile": false,
+        "default_profile": true,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+        "created_at": "Mon Nov 25 03:03:59 +0000 2019",
+        "id": 1198799463721996288,
+        "id_str": "1198799463721996288",
+        "full_text": "An \"outside the box\" solution for imbalanced data classification\nhttps://t.co/O2uynRZJMg\nby Hubert Jegierski et al.\n#Classifier #ComputerScience",
+        "truncated": false,
+        "display_text_range": [
+            0,
+            144
+        ],
+        "entities": {
+            "hashtags": [
+                {
+                    "text": "Classifier",
+                    "indices": [
+                        116,
+                        127
+                    ]
+                },
+                {
+                    "text": "ComputerScience",
+                    "indices": [
+                        128,
+                        144
+                    ]
+                }
+            ],
+            "symbols": [],
+            "user_mentions": [],
+            "urls": [
+                {
+                    "url": "https://t.co/O2uynRZJMg",
+                    "expanded_url": "https://deepai.org/publication/an-outside-the-box-solution-for-imbalanced-data-classification",
+                    "display_url": "deepai.org/publication/an\u2026",
+                    "indices": [
+                        65,
+                        88
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "iso_language_code": "en",
+            "result_type": "recent"
+        },
+        "source": "<a href=\"https://deepai.org/\" rel=\"nofollow\">DeepAI</a>",
+        "in_reply_to_status_id": null,
+        "in_reply_to_status_id_str": null,
+        "in_reply_to_user_id": null,
+        "in_reply_to_user_id_str": null,
+        "in_reply_to_screen_name": null,
+        "user": {
+            "id": 848081553368416256,
+            "id_str": "848081553368416256",
+            "name": "DeepAI",
+            "screen_name": "Deep__AI",
+            "location": "California",
+            "description": "DeepAI designs and develops advanced machine learning while striving for general intelligence. Power your apps with the latest in machine learning.",
+            "url": "https://t.co/j7oS2kd1uh",
+            "entities": {
+                "url": {
+                    "urls": [
+                        {
+                            "url": "https://t.co/j7oS2kd1uh",
+                            "expanded_url": "https://deepai.org",
+                            "display_url": "deepai.org",
+                            "indices": [
+                                0,
+                                23
+                            ]
+                        }
+                    ]
+                },
+                "description": {
+                    "urls": []
+                }
+            },
+            "protected": false,
+            "followers_count": 19288,
+            "friends_count": 467,
+            "listed_count": 188,
+            "created_at": "Sat Apr 01 07:56:13 +0000 2017",
+            "favourites_count": 293,
+            "utc_offset": null,
+            "time_zone": null,
+            "geo_enabled": false,
+            "verified": false,
+            "statuses_count": 6451,
+            "lang": null,
+            "contributors_enabled": false,
+            "is_translator": false,
+            "is_translation_enabled": false,
+            "profile_background_color": "F5F8FA",
+            "profile_background_image_url": null,
+            "profile_background_image_url_https": null,
+            "profile_background_tile": false,
+            "profile_image_url": "http://pbs.twimg.com/profile_images/1118532973203079168/8VTzkyzD_normal.png",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/1118532973203079168/8VTzkyzD_normal.png",
+            "profile_banner_url": "https://pbs.twimg.com/profile_banners/848081553368416256/1514366404",
+            "profile_link_color": "1DA1F2",
+            "profile_sidebar_border_color": "C0DEED",
+            "profile_sidebar_fill_color": "DDEEF6",
+            "profile_text_color": "333333",
+            "profile_use_background_image": true,
+            "has_extended_profile": false,
+            "default_profile": true,
+            "default_profile_image": false,
+            "following": false,
+            "follow_request_sent": false,
+            "notifications": false,
+            "translator_type": "none"
+        },
+        "geo": null,
+        "coordinates": null,
+        "place": null,
+        "contributors": null,
+        "is_quote_status": false,
+        "retweet_count": 11,
+        "favorite_count": 28,
+        "favorited": false,
+        "retweeted": false,
+        "possibly_sensitive": false,
+        "lang": "en"
+    },
+    "is_quote_status": false,
+    "retweet_count": 11,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "possibly_sensitive": false,
+    "lang": "en"
+}
+{
+    "created_at": "Mon Nov 25 18:32:28 +0000 2019",
+    "id": 1199033126015700994,
+    "id_str": "1199033126015700994",
+    "full_text": "RT @jim_malcolm: \u201cDig into every industry, and you\u2019ll find AI changing the nature of work,\u201d said #DanielaRus, director of #MIT\u2019s #ComputerS\u2026",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        140
+    ],
+    "entities": {
+        "hashtags": [
+            {
+                "text": "DanielaRus",
+                "indices": [
+                    97,
+                    108
+                ]
+            },
+            {
+                "text": "MIT",
+                "indices": [
+                    122,
+                    126
+                ]
+            }
+        ],
+        "symbols": [],
+        "user_mentions": [
+            {
+                "screen_name": "jim_malcolm",
+                "name": "Jim Malcolm",
+                "id": 60981874,
+                "id_str": "60981874",
+                "indices": [
+                    3,
+                    15
+                ]
+            }
+        ],
+        "urls": []
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"https://tutorjeh.com\" rel=\"nofollow\">example03101991</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 1076172179178487809,
+        "id_str": "1076172179178487809",
+        "name": "ahmad bazzi",
+        "screen_name": "drahmadbazzi",
+        "location": "Nice, France",
+        "description": "Signal Processing Engineer | PhD in Electrical Engineering | #convexoptimization",
+        "url": "https://t.co/0iqIH9Pclf",
+        "entities": {
+            "url": {
+                "urls": [
+                    {
+                        "url": "https://t.co/0iqIH9Pclf",
+                        "expanded_url": "http://www.youtube.com/c/AhmadBazzi",
+                        "display_url": "youtube.com/c/AhmadBazzi",
+                        "indices": [
+                            0,
+                            23
+                        ]
+                    }
+                ]
+            },
+            "description": {
+                "urls": []
+            }
+        },
+        "protected": false,
+        "followers_count": 721,
+        "friends_count": 205,
+        "listed_count": 11,
+        "created_at": "Fri Dec 21 17:46:56 +0000 2018",
+        "favourites_count": 5202,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 21163,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "000000",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/1080446324963770368/w2EDnt9K_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1080446324963770368/w2EDnt9K_normal.jpg",
+        "profile_banner_url": "https://pbs.twimg.com/profile_banners/1076172179178487809/1545503908",
+        "profile_link_color": "CE3456",
+        "profile_sidebar_border_color": "000000",
+        "profile_sidebar_fill_color": "000000",
+        "profile_text_color": "000000",
+        "profile_use_background_image": false,
+        "has_extended_profile": true,
+        "default_profile": false,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+        "created_at": "Mon Nov 25 18:30:31 +0000 2019",
+        "id": 1199032633201758210,
+        "id_str": "1199032633201758210",
+        "full_text": "\u201cDig into every industry, and you\u2019ll find AI changing the nature of work,\u201d said #DanielaRus, director of #MIT\u2019s #ComputerScience and #ArtificialIntelligence Laboratory #CSAIL\n\n#AI And The #FutureOfWork: The Economic Impacts Of Artificial Intelligence https://t.co/AWG4yEMuCT https://t.co/RjXB5MRxNZ",
+        "truncated": false,
+        "display_text_range": [
+            0,
+            274
+        ],
+        "entities": {
+            "hashtags": [
+                {
+                    "text": "DanielaRus",
+                    "indices": [
+                        80,
+                        91
+                    ]
+                },
+                {
+                    "text": "MIT",
+                    "indices": [
+                        105,
+                        109
+                    ]
+                },
+                {
+                    "text": "ComputerScience",
+                    "indices": [
+                        112,
+                        128
+                    ]
+                },
+                {
+                    "text": "ArtificialIntelligence",
+                    "indices": [
+                        133,
+                        156
+                    ]
+                },
+                {
+                    "text": "CSAIL",
+                    "indices": [
+                        168,
+                        174
+                    ]
+                },
+                {
+                    "text": "AI",
+                    "indices": [
+                        176,
+                        179
+                    ]
+                },
+                {
+                    "text": "FutureOfWork",
+                    "indices": [
+                        188,
+                        201
+                    ]
+                }
+            ],
+            "symbols": [],
+            "user_mentions": [],
+            "urls": [
+                {
+                    "url": "https://t.co/AWG4yEMuCT",
+                    "expanded_url": "https://buff.ly/2rkwyMo",
+                    "display_url": "buff.ly/2rkwyMo",
+                    "indices": [
+                        251,
+                        274
+                    ]
+                }
+            ],
+            "media": [
+                {
+                    "id": 1199032631301677056,
+                    "id_str": "1199032631301677056",
+                    "indices": [
+                        275,
+                        298
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EKPR007WoAA159F.jpg",
+                    "media_url_https": "https://pbs.twimg.com/media/EKPR007WoAA159F.jpg",
+                    "url": "https://t.co/RjXB5MRxNZ",
+                    "display_url": "pic.twitter.com/RjXB5MRxNZ",
+                    "expanded_url": "https://twitter.com/jim_malcolm/status/1199032633201758210/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "medium": {
+                            "w": 1200,
+                            "h": 630,
+                            "resize": "fit"
+                        },
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        },
+                        "large": {
+                            "w": 1200,
+                            "h": 630,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 680,
+                            "h": 357,
+                            "resize": "fit"
+                        }
+                    }
+                }
+            ]
+        },
+        "extended_entities": {
+            "media": [
+                {
+                    "id": 1199032631301677056,
+                    "id_str": "1199032631301677056",
+                    "indices": [
+                        275,
+                        298
+                    ],
+                    "media_url": "http://pbs.twimg.com/media/EKPR007WoAA159F.jpg",
+                    "media_url_https": "https://pbs.twimg.com/media/EKPR007WoAA159F.jpg",
+                    "url": "https://t.co/RjXB5MRxNZ",
+                    "display_url": "pic.twitter.com/RjXB5MRxNZ",
+                    "expanded_url": "https://twitter.com/jim_malcolm/status/1199032633201758210/photo/1",
+                    "type": "photo",
+                    "sizes": {
+                        "medium": {
+                            "w": 1200,
+                            "h": 630,
+                            "resize": "fit"
+                        },
+                        "thumb": {
+                            "w": 150,
+                            "h": 150,
+                            "resize": "crop"
+                        },
+                        "large": {
+                            "w": 1200,
+                            "h": 630,
+                            "resize": "fit"
+                        },
+                        "small": {
+                            "w": 680,
+                            "h": 357,
+                            "resize": "fit"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "iso_language_code": "en",
+            "result_type": "recent"
+        },
+        "source": "<a href=\"https://buffer.com\" rel=\"nofollow\">Buffer</a>",
+        "in_reply_to_status_id": null,
+        "in_reply_to_status_id_str": null,
+        "in_reply_to_user_id": null,
+        "in_reply_to_user_id_str": null,
+        "in_reply_to_screen_name": null,
+        "user": {
+            "id": 60981874,
+            "id_str": "60981874",
+            "name": "Jim Malcolm",
+            "screen_name": "jim_malcolm",
+            "location": "Austin, TX",
+            "description": "",
+            "url": "https://t.co/1YnmOUaUZ7",
+            "entities": {
+                "url": {
+                    "urls": [
+                        {
+                            "url": "https://t.co/1YnmOUaUZ7",
+                            "expanded_url": "https://www.linkedin.com/in/jimmalcolm/",
+                            "display_url": "linkedin.com/in/jimmalcolm/",
+                            "indices": [
+                                0,
+                                23
+                            ]
+                        }
+                    ]
+                },
+                "description": {
+                    "urls": []
+                }
+            },
+            "protected": false,
+            "followers_count": 4565,
+            "friends_count": 4631,
+            "listed_count": 85,
+            "created_at": "Tue Jul 28 18:31:54 +0000 2009",
+            "favourites_count": 377,
+            "utc_offset": null,
+            "time_zone": null,
+            "geo_enabled": true,
+            "verified": false,
+            "statuses_count": 2931,
+            "lang": null,
+            "contributors_enabled": false,
+            "is_translator": false,
+            "is_translation_enabled": false,
+            "profile_background_color": "000000",
+            "profile_background_image_url": "http://abs.twimg.com/images/themes/theme14/bg.gif",
+            "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme14/bg.gif",
+            "profile_background_tile": false,
+            "profile_image_url": "http://pbs.twimg.com/profile_images/765283647918186496/wGdUiZki_normal.jpg",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/765283647918186496/wGdUiZki_normal.jpg",
+            "profile_banner_url": "https://pbs.twimg.com/profile_banners/60981874/1471293266",
+            "profile_link_color": "ABB8C2",
+            "profile_sidebar_border_color": "000000",
+            "profile_sidebar_fill_color": "000000",
+            "profile_text_color": "000000",
+            "profile_use_background_image": true,
+            "has_extended_profile": true,
+            "default_profile": false,
+            "default_profile_image": false,
+            "following": false,
+            "follow_request_sent": false,
+            "notifications": false,
+            "translator_type": "none"
+        },
+        "geo": null,
+        "coordinates": null,
+        "place": null,
+        "contributors": null,
+        "is_quote_status": false,
+        "retweet_count": 1,
+        "favorite_count": 2,
+        "favorited": false,
+        "retweeted": false,
+        "possibly_sensitive": false,
+        "lang": "en"
+    },
+    "is_quote_status": false,
+    "retweet_count": 1,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+}
+{
+    "created_at": "Mon Nov 25 18:31:24 +0000 2019",
+    "id": 1199032855684403202,
+    "id_str": "1199032855684403202",
+    "full_text": "RT @ResearchGermany: Current call for a #PhD #Fellowship in #SoftwareVerification offered at @TUDarmstadt - Start your career now! https://\u2026",
+    "truncated": false,
+    "display_text_range": [
+        0,
+        140
+    ],
+    "entities": {
+        "hashtags": [
+            {
+                "text": "PhD",
+                "indices": [
+                    40,
+                    44
+                ]
+            },
+            {
+                "text": "Fellowship",
+                "indices": [
+                    45,
+                    56
+                ]
+            },
+            {
+                "text": "SoftwareVerification",
+                "indices": [
+                    60,
+                    81
+                ]
+            }
+        ],
+        "symbols": [],
+        "user_mentions": [
+            {
+                "screen_name": "ResearchGermany",
+                "name": "Research in Germany",
+                "id": 1001390960,
+                "id_str": "1001390960",
+                "indices": [
+                    3,
+                    19
+                ]
+            },
+            {
+                "screen_name": "TUDarmstadt",
+                "name": "TU Darmstadt",
+                "id": 139746217,
+                "id_str": "139746217",
+                "indices": [
+                    93,
+                    105
+                ]
+            }
+        ],
+        "urls": []
+    },
+    "metadata": {
+        "iso_language_code": "en",
+        "result_type": "recent"
+    },
+    "source": "<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>",
+    "in_reply_to_status_id": null,
+    "in_reply_to_status_id_str": null,
+    "in_reply_to_user_id": null,
+    "in_reply_to_user_id_str": null,
+    "in_reply_to_screen_name": null,
+    "user": {
+        "id": 362165129,
+        "id_str": "362165129",
+        "name": "Richard M. Blay",
+        "screen_name": "BlayRichard",
+        "location": "Accra, Ghana",
+        "description": "Researcher, Teacher, DAAD Ambassador. Loves God, Loves people, Loves travel, Loves to swim, Loves music.",
+        "url": null,
+        "entities": {
+            "description": {
+                "urls": []
+            }
+        },
+        "protected": false,
+        "followers_count": 394,
+        "friends_count": 1290,
+        "listed_count": 2,
+        "created_at": "Thu Aug 25 23:31:15 +0000 2011",
+        "favourites_count": 4460,
+        "utc_offset": null,
+        "time_zone": null,
+        "geo_enabled": false,
+        "verified": false,
+        "statuses_count": 2242,
+        "lang": null,
+        "contributors_enabled": false,
+        "is_translator": false,
+        "is_translation_enabled": false,
+        "profile_background_color": "C0DEED",
+        "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+        "profile_background_tile": false,
+        "profile_image_url": "http://pbs.twimg.com/profile_images/596298762928189440/mHCgpmUv_normal.jpg",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/596298762928189440/mHCgpmUv_normal.jpg",
+        "profile_banner_url": "https://pbs.twimg.com/profile_banners/362165129/1431003677",
+        "profile_link_color": "1DA1F2",
+        "profile_sidebar_border_color": "C0DEED",
+        "profile_sidebar_fill_color": "DDEEF6",
+        "profile_text_color": "333333",
+        "profile_use_background_image": true,
+        "has_extended_profile": false,
+        "default_profile": true,
+        "default_profile_image": false,
+        "following": false,
+        "follow_request_sent": false,
+        "notifications": false,
+        "translator_type": "none"
+    },
+    "geo": null,
+    "coordinates": null,
+    "place": null,
+    "contributors": null,
+    "retweeted_status": {
+        "created_at": "Mon Nov 25 18:01:51 +0000 2019",
+        "id": 1199025420039020544,
+        "id_str": "1199025420039020544",
+        "full_text": "Current call for a #PhD #Fellowship in #SoftwareVerification offered at @TUDarmstadt - Start your career now! https://t.co/SEbpF20nIn #PhDGermany #ComputerScience",
+        "truncated": false,
+        "display_text_range": [
+            0,
+            162
+        ],
+        "entities": {
+            "hashtags": [
+                {
+                    "text": "PhD",
+                    "indices": [
+                        19,
+                        23
+                    ]
+                },
+                {
+                    "text": "Fellowship",
+                    "indices": [
+                        24,
+                        35
+                    ]
+                },
+                {
+                    "text": "SoftwareVerification",
+                    "indices": [
+                        39,
+                        60
+                    ]
+                },
+                {
+                    "text": "PhDGermany",
+                    "indices": [
+                        134,
+                        145
+                    ]
+                },
+                {
+                    "text": "ComputerScience",
+                    "indices": [
+                        146,
+                        162
+                    ]
+                }
+            ],
+            "symbols": [],
+            "user_mentions": [
+                {
+                    "screen_name": "TUDarmstadt",
+                    "name": "TU Darmstadt",
+                    "id": 139746217,
+                    "id_str": "139746217",
+                    "indices": [
+                        72,
+                        84
+                    ]
+                }
+            ],
+            "urls": [
+                {
+                    "url": "https://t.co/SEbpF20nIn",
+                    "expanded_url": "http://ow.ly/BcOn50xdOU3",
+                    "display_url": "ow.ly/BcOn50xdOU3",
+                    "indices": [
+                        110,
+                        133
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "iso_language_code": "en",
+            "result_type": "recent"
+        },
+        "source": "<a href=\"https://www.hootsuite.com\" rel=\"nofollow\">Hootsuite Inc.</a>",
+        "in_reply_to_status_id": null,
+        "in_reply_to_status_id_str": null,
+        "in_reply_to_user_id": null,
+        "in_reply_to_user_id_str": null,
+        "in_reply_to_screen_name": null,
+        "user": {
+            "id": 1001390960,
+            "id_str": "1001390960",
+            "name": "Research in Germany",
+            "screen_name": "ResearchGermany",
+            "location": "Germany",
+            "description": "Information about research and funding opportunities, open PhD and research positions, news and upcoming events in Germany. Imprint: https://t.co/Uyy8Jxv4c5",
+            "url": "https://t.co/mUrhCYAtZY",
+            "entities": {
+                "url": {
+                    "urls": [
+                        {
+                            "url": "https://t.co/mUrhCYAtZY",
+                            "expanded_url": "https://www.research-in-germany.org",
+                            "display_url": "research-in-germany.org",
+                            "indices": [
+                                0,
+                                23
+                            ]
+                        }
+                    ]
+                },
+                "description": {
+                    "urls": [
+                        {
+                            "url": "https://t.co/Uyy8Jxv4c5",
+                            "expanded_url": "http://bit.ly/2gsHNrP",
+                            "display_url": "bit.ly/2gsHNrP",
+                            "indices": [
+                                133,
+                                156
+                            ]
+                        }
+                    ]
+                }
+            },
+            "protected": false,
+            "followers_count": 62093,
+            "friends_count": 404,
+            "listed_count": 773,
+            "created_at": "Mon Dec 10 10:31:43 +0000 2012",
+            "favourites_count": 5212,
+            "utc_offset": null,
+            "time_zone": null,
+            "geo_enabled": true,
+            "verified": false,
+            "statuses_count": 36161,
+            "lang": null,
+            "contributors_enabled": false,
+            "is_translator": false,
+            "is_translation_enabled": false,
+            "profile_background_color": "FCFCFC",
+            "profile_background_image_url": "http://abs.twimg.com/images/themes/theme1/bg.png",
+            "profile_background_image_url_https": "https://abs.twimg.com/images/themes/theme1/bg.png",
+            "profile_background_tile": false,
+            "profile_image_url": "http://pbs.twimg.com/profile_images/885072446621184000/PzCw1BpN_normal.jpg",
+            "profile_image_url_https": "https://pbs.twimg.com/profile_images/885072446621184000/PzCw1BpN_normal.jpg",
+            "profile_banner_url": "https://pbs.twimg.com/profile_banners/1001390960/1546425278",
+            "profile_link_color": "0084B4",
+            "profile_sidebar_border_color": "FFFFFF",
+            "profile_sidebar_fill_color": "DDEEF6",
+            "profile_text_color": "333333",
+            "profile_use_background_image": true,
+            "has_extended_profile": false,
+            "default_profile": false,
+            "default_profile_image": false,
+            "following": false,
+            "follow_request_sent": false,
+            "notifications": false,
+            "translator_type": "none"
+        },
+        "geo": null,
+        "coordinates": null,
+        "place": null,
+        "contributors": null,
+        "is_quote_status": false,
+        "retweet_count": 4,
+        "favorite_count": 2,
+        "favorited": false,
+        "retweeted": false,
+        "possibly_sensitive": false,
+        "lang": "en"
+    },
+    "is_quote_status": false,
+    "retweet_count": 4,
+    "favorite_count": 0,
+    "favorited": false,
+    "retweeted": false,
+    "lang": "en"
+}
