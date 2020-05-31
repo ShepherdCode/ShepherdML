@@ -16,6 +16,7 @@ import argparse
 import traceback
 import sys
 import csv
+from math import exp
 
 class Vector():
     def __init__(self,dimensions):
@@ -33,16 +34,23 @@ class Vector():
         return self.dimensions
 class Output_Node ():
     def __init__(self):
-        pass
+        self.numerator=0.0
+        self.denominator=0.0
+    def add(self,value,same_class):
+        if same_class:
+            self.numerator=exp(value)
+        self.denominator += exp(value)
+    def get_output(self):
+        prob = self.numerator / self.denominator
+        return prob
 class Hidden_Node ():
     def __init__(self):
         self.sum=0
     def add(self,value):
         self.sum += value
     def get_output(self):
-        return activation(self.sum)
-    def activation(self,value):
-        return value # linear/identity activation
+        activation = 1*self.sum   # linear activation
+        return activation
 class Multinomial_Logistic_Regression ():
     def __init__(self,epochs=3, alpha=1, dimensions=5, classes=3):
         self.epochs=3
@@ -65,18 +73,20 @@ class Multinomial_Logistic_Regression ():
             for epoch in range(0,self.epochs):
                 print("epoch %d"%epoch)
     def classify(self,filename):
-        print("Assume weights are trained or initialized")
+        say("Assume weights are trained or initialized")
         instances=[]
+        say("Load instances from "+filename)
         with open (filename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             reader.__next__() # skip header
             for instance in reader:
                 instances.append(instance)
         for instance in instances:
-            print("Classify instance %d"%int(instance[0]))
+            say("Classify instance "+instance[0])
             for i in range(0,self.dimensions):
                 xi = float(instance[i+1])
                 self.input_layer.set(i,xi)
+            say("Compute hidden layer values ")
             for r in range(0,self.classes):
                 hidden_node = self.hidden_nodes[r]
                 weight_vector = self.weight_vectors[r]
@@ -85,6 +95,18 @@ class Multinomial_Logistic_Regression ():
                     wi = weight_vector.get(d)
                     wx = wi * xi
                     hidden_node.add(wx)
+            say("Compute output layer values ")
+            for c in range(0,self.classes):
+                output_node = self.output_nodes[c]
+                for h in range (0,self.classes):
+                    hidden_node = self.hidden_nodes[h]
+                    value = hidden_node.get_output()
+                    same_class=(c==h)
+                    output_node.add(value,same_class)
+            say("Output ")
+            for c in range(0,self.classes):
+                output_node = self.output_nodes[c]
+                print(output_node.get_output())
 
 def say(statement):
     try:
