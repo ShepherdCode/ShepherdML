@@ -35,6 +35,7 @@ class Vector():
         return self.dimension
     def __str__(self):
         return str(self.vec)
+
 class Instance():   # TO DO: extend vector
     def __init__(self,dimension,aslist):
         self.id=aslist[0]
@@ -51,12 +52,17 @@ class Instance():   # TO DO: extend vector
         return self.id
     def get_value(self,i):
         return self.x[i]
+    def __str__(self):
+        return str(self.x)
 
 class Output_Node ():
     def __init__(self):
         self.numerator=0.0
         self.denominator=0.0
         self.name=""
+    def reset(self):
+        self.numerator=0.0
+        self.denominator=0.0
     def add(self,value,same_class):
         try:
             if same_class:
@@ -73,6 +79,7 @@ class Output_Node ():
         self.name = name
     def get_class(self):
         return self.name
+
 class Hidden_Node ():
     def __init__(self):
         self.sum=0
@@ -81,8 +88,9 @@ class Hidden_Node ():
     def get_output(self):
         activation = 1*self.sum   # linear activation
         return activation
+
 class Multinomial_Logistic_Regression ():
-    def __init__(self,epochs=3, alpha=1, dimension=5, classes=3):
+    def __init__(self,epochs=3, alpha=1.0, dimension=5, classes=3):
         self.epochs=epochs
         self.alpha=alpha
         self.dimension=dimension
@@ -97,10 +105,10 @@ class Multinomial_Logistic_Regression ():
         self.output_nodes=[]
         for r in range(0,classes):
             self.output_nodes.append(Output_Node())
-        self.training_instances=[]  # TO DO: rename because it also holds an unlabeled instance
+        self.data_instances=[]  # TO DO: rename because it also holds an unlabeled instance
     def set_class_labels(self):
         all_labels=[]
-        for instance in self.training_instances:
+        for instance in self.data_instances:
             given_label = instance.get_label() # last column in file
             all_labels.append(given_label)
         uniq_labels=sorted(set(all_labels))
@@ -115,26 +123,27 @@ class Multinomial_Logistic_Regression ():
             this_label = uniq_labels[c]
             output_node.set_class(this_label)
     def load_instances(self,filename):
-        self.training_instances=[]
+        self.data_instances=[]
         with open (filename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
             reader.__next__() # skip header
             for oneline in reader:
                 instance = Instance(self.dimension,oneline)
-                self.training_instances.append(instance)
+                self.data_instances.append(instance)
     def train_file(self,filename):
         say("TRAIN")
         if (args.debug):
             self.show_all_weights()
         self.load_instances(filename)
-        say("Load class names for %d instances"%len(self.training_instances))
+        say("Load class names for %d instances"%len(self.data_instances))
         self.set_class_labels()
         for epoch in range(0,self.epochs):
             say("EPOCH %d..."%epoch)
-            for instance in self.training_instances:
+            for instance in self.data_instances:
                 yhat = self.classify_instance(instance)
                 say("instance "+str(instance)+" classified as "+yhat)
-                self.show_all_output_values()
+                if (args.debug):
+                    self.show_all_output_values()
                 say("update weights...")
                 self.update_weights(instance)
                 if (args.debug):
@@ -145,6 +154,7 @@ class Multinomial_Logistic_Regression ():
             weight_vector = self.weight_vectors[r]
             print(weight_vector)
     def update_weights(self,instance):
+        # Assume instance was just classified so output nodes have probabilities
         alpha = self.alpha
         y = instance.get_label()
         say("true class is "+y)
@@ -165,7 +175,7 @@ class Multinomial_Logistic_Regression ():
         say("CLASSIFY")
         say("Assume weights are trained or initialized")
         self.load_instances(filename)
-        for instance in self.training_instances:
+        for instance in self.data_instances:
             prediction=self.classify_instance(instance)
             print("input: "+str(instance)+" prediction: "+prediction)
             if (args.debug):
@@ -178,6 +188,9 @@ class Multinomial_Logistic_Regression ():
             print("%f %s"%(prob,classname))
     def classify_instance(self,instance):
         say("Classify instance "+instance.get_id())
+        for c in range(0,self.classes):
+            output_node = self.output_nodes[c]
+            output_node.reset()
         for i in range(0,self.dimension):
             xi = instance.get_value(i)
             self.input_layer.set(i,xi)
@@ -253,7 +266,7 @@ if __name__ == '__main__':
         args_parse()
         # TO DO: get dimension and classes from input file
         # TO DO: get epochs and learn rate from user
-        nn = Multinomial_Logistic_Regression (5,1,5,3)
+        nn = Multinomial_Logistic_Regression (1,0.1,5,3)
         if args.example is not None:
             create_sample_data(args.example)
         if args.train is not None:
