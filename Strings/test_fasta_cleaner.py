@@ -63,6 +63,28 @@ class TestFastaCleaner(unittest.TestCase):
         same=os.system("diff %s %s"%(self.FILE2,self.FILE3))
         self.assertEqual(same,0)
 
+    def test_multiple_N(self):
+        sequence1="ACGTA"
+        nsequence="NNNNN"
+        sequence2="TTCAA"
+        with open(self.FILE1,'w') as fa:
+            writeline(fa,">multiple_N")
+            writeline(fa,sequence1+nsequence+sequence2+nsequence+sequence1)
+        with open(self.FILE3,'w') as fa:
+            writeline(fa,">multiple_N")
+            writeline(fa,sequence1)
+            writeline(fa,">multiple_N-part-2")
+            writeline(fa,sequence2)
+            writeline(fa,">multiple_N-part-3")
+            writeline(fa,sequence1)
+        fc = Fasta_Cleaner(self.FILE1,self.FILE2)
+        fc.fix_everything()
+        same=os.system("diff %s %s"%(self.FILE2,self.FILE3))
+        self.assertEqual(same,0)
+
+    def test_N_at_start_and_end(self):
+        pass
+
 if __name__ == '__main__':
     print ("Running unittest for fasta_cleaner.")
     unittest.main()
