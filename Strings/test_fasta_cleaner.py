@@ -15,10 +15,10 @@ class TestFastaCleaner(unittest.TestCase):
         self.FILE3="test.answer.fa"
     def tearDown(self):
         try:
-            #os.remove(self.FILE1)
-            #os.remove(self.FILE2)
-            #os.remove(self.FILE3)
-            print("TO DO: remove the test files")
+            os.remove(self.FILE1)
+            os.remove(self.FILE2)
+            os.remove(self.FILE3)
+            #print("TO DO: remove the test files")
         except Exception as e:
             pass # This can happen even if the file is removed.
 
@@ -83,7 +83,22 @@ class TestFastaCleaner(unittest.TestCase):
         self.assertEqual(same,0)
 
     def test_N_at_start_and_end(self):
-        pass
+        sequence1="ACGTA"
+        nsequence="NNNNN"
+        sequence2="TTCAA"
+        with open(self.FILE1,'w') as fa:
+            writeline(fa,">start_end_N")
+            writeline(fa,nsequence+sequence1+nsequence)
+            writeline(fa,nsequence+sequence2+nsequence)
+        with open(self.FILE3,'w') as fa:
+            writeline(fa,">start_end_N")
+            writeline(fa,sequence1)
+            writeline(fa,">start_end_N-part-2")
+            writeline(fa,sequence2)
+        fc = Fasta_Cleaner(self.FILE1,self.FILE2)
+        fc.fix_everything()
+        same=os.system("diff %s %s"%(self.FILE2,self.FILE3))
+        self.assertEqual(same,0)
 
 if __name__ == '__main__':
     print ("Running unittest for fasta_cleaner.")

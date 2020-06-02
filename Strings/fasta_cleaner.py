@@ -15,30 +15,65 @@ class Fasta_Cleaner():
         self.infile = infile
         self.outfile = outfile
         self.DEFLINE_PREFIX='>'
-        self.NEWLINE='\n'
 
     def fix_everything(self):
-        NL=self.NEWLINE
+        Nchar='N'
+        prev_seq=[]
+        defline=None
         with open(self.outfile, 'w') as outfa:
             with open(self.infile, 'r') as infa:
                 for line in infa:
+                    line=line.rstrip()
                     if line[0]==self.DEFLINE_PREFIX:
+                        self.print_prev(outfa,defline,prev_seq)
+                        prev_seq=[]
                         defline=line
-                        outfa.write(defline)
+                        ends_in_n = False
                     else:
-                        partnum = 1
-                        defline=defline.rstrip()
-                        allcaps = line.upper().rstrip()
+                        if ends_in_n:
+                            prev_seq.append(0)  # indicate Ns came before
+                        ends_in_n = Nchar==line[-1]
+                        allcaps = line.upper()
+                        allcaps = self.remove_leading_nrun(allcaps)
                         (prefix,suffix)=self.split_first_nrun(allcaps)
                         if len(prefix)>0:
-                            outfa.write(prefix+NL)
+                            prev_seq.append(prefix)
                         while suffix is not None:
                             (prefix,suffix)=self.split_first_nrun(suffix)
-                            if (len(prefix)>0):
-                                partnum += 1
-                                continuation=defline+"-part-"+str(partnum)
-                                outfa.write(continuation+NL)
-                                outfa.write(prefix+NL)
+                            if len(prefix)>0:
+                                prev_seq.append(0)  # indicate Ns came before
+                                prev_seq.append(prefix)
+                # Last sequence is special case
+                self.print_prev(outfa,defline,prev_seq)
+
+    def print_prev(self,outfile,defline,seqs):
+        NL='\n'
+        part = 1
+        if defline is not None and len(seqs)>0:
+            outfile.write(defline+NL)
+            for seq in seqs:
+                if seq==0:
+                    part += 1
+                    continuation=defline+"-part-"+str(part)
+                    outfile.write(continuation+NL)
+                else:
+                    outfile.write(seq+NL)
+
+    def remove_leading_nrun(self,str):
+        Nchar='N'
+        nextpos=str.find(Nchar)
+        if nextpos==0:
+            # yes, it starts with N
+            while nextpos<len(str) and str[nextpos]==Nchar:
+                # skip to first non-N
+                nextpos += 1
+            if nextpos>=len(str):
+                # string was all N
+                str=""
+            else:
+                # string started with N
+                str=str[nextpos:]
+        return str
 
     def split_first_nrun(self,str):
         Nchar='N'
