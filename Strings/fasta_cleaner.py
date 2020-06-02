@@ -12,19 +12,24 @@ def say(say1="",say2=""):
 
 class Fasta_Cleaner():
 
-    def __init__(self,fastafile):
-        self.fastafile = fastafile
+    def __init__(self,infile,outfile):
+        self.infile = infile
+        self.outfile = outfile
 
     def fix_everything(self):
-        with open(self.fastafile, 'r') as fa:
-            print("Fixed!")
+        with open(self.infile, 'r') as infa:
+            with open(self.outfile, 'w') as outfa:
+                line=infa.read()
+                outfa.write(line)
 
 def args_parse():
     global args
     parser = argparse.ArgumentParser(
         description='Fix a FASTA file.')
     parser.add_argument(
-        'fastafile', help='input filename', type=str)
+        'infile', help='input filename (fasta)', type=str)
+    parser.add_argument(
+        'outfile', help='output filename (fasta)', type=str)
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
@@ -34,7 +39,7 @@ if __name__ == "__main__":
     '''Inspect & fix a FASTA file of DNA sequences.'''
     try:
         args_parse()
-        fixer = Fasta_Cleaner(args.fastafile)
+        fixer = Fasta_Cleaner(args.infile,args.outfile)
         fixer.fix_everything()
     except Exception:
         print()
