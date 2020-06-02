@@ -15,15 +15,32 @@ class Fasta_Cleaner():
         self.infile = infile
         self.outfile = outfile
         self.DEFLINE_PREFIX='>'
+        self.NEWLINE='\n'
 
     def fix_everything(self):
+        NL=self.NEWLINE
         with open(self.outfile, 'w') as outfa:
             with open(self.infile, 'r') as infa:
                 for line in infa:
                     if line[0]==self.DEFLINE_PREFIX:
-                        outfa.write(line)
+                        defline=line
+                        outfa.write(defline)
                     else:
-                        outfa.write(line.upper())
+                        partnum = 1
+                        allcaps = line.upper()
+                        nextpos=allcaps.find('N')
+                        if nextpos < 0:
+                            outfa.write(allcaps)
+                        else:
+                            allcaps=allcaps.rstrip()
+                            defline=defline.rstrip()
+                            prefix=allcaps[0:nextpos]
+                            outfa.write(prefix+NL)
+                            suffix=allcaps[nextpos+1:]
+                            partnum += 1
+                            newdefline=defline+"-part-"+str(partnum)
+                            outfa.write(newdefline+NL)
+                            outfa.write(suffix+NL)
 
 def args_parse():
     global args
