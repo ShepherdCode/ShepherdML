@@ -11,16 +11,19 @@ def say(say1="",say2=""):
         print (say2)
 
 class Fasta_Cleaner():
-
     def __init__(self,infile,outfile):
         self.infile = infile
         self.outfile = outfile
+        self.DEFLINE_PREFIX='>'
 
     def fix_everything(self):
-        with open(self.infile, 'r') as infa:
-            with open(self.outfile, 'w') as outfa:
-                line=infa.read()
-                outfa.write(line)
+        with open(self.outfile, 'w') as outfa:
+            with open(self.infile, 'r') as infa:
+                for line in infa:
+                    if line[0]==self.DEFLINE_PREFIX:
+                        outfa.write(line)
+                    else:
+                        outfa.write(line.upper())
 
 def args_parse():
     global args
