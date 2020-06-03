@@ -2,6 +2,7 @@ import argparse
 import traceback
 import os
 import sys
+#import re
 from datetime import datetime
 
 class Fasta_Cleaner():
@@ -12,9 +13,11 @@ class Fasta_Cleaner():
         self.debug=debug
 
     def fix_everything(self):
-        Nchar='N'
         prev_seq=[]
+        prefix=""
+        suffix=""
         defline=None
+        ends_in_n = False
         with open(self.outfile, 'w') as outfa:
             with open(self.infile, 'r') as infa:
                 num_seqs = 0
@@ -24,69 +27,87 @@ class Fasta_Cleaner():
                         self.print_prev(outfa,defline,prev_seq)
                         prev_seq=[]
                         defline=line
-                        ends_in_n = False  # can we get rid of this?
+                        ends_in_n = False
                         num_seqs += 1
                     else:
                         if ends_in_n:
                             prev_seq.append(0)  # indicate Ns came before
-                        ends_in_n = Nchar==line[-1]
+                            ends_in_n = False
                         allcaps = line.upper()
                         allcaps = self.remove_leading_nrun(allcaps)
-                        (prefix,suffix)=self.split_first_nrun(allcaps)
-                        if len(prefix)>0:
-                            prev_seq.append(prefix)
-                        while suffix is not None:
-                            (prefix,suffix)=self.split_first_nrun(suffix)
+                        # Possible that line shrunk to nothing
+                        if len(allcaps)>0:
+                            ends_in_n = not self.is_valid(allcaps[-1])
+                            (prefix,suffix)=self.split_first_nrun(allcaps)
                             if len(prefix)>0:
-                                prev_seq.append(0)  # indicate Ns came before
                                 prev_seq.append(prefix)
+                            while suffix is not None:
+                                (prefix,suffix)=self.split_first_nrun(suffix)
+                                if len(prefix)>0:
+                                    prev_seq.append(0)  # indicate Ns came before
+                                    prev_seq.append(prefix)
                 # Last sequence is special case
                 self.print_prev(outfa,defline,prev_seq)
         if (self.debug):
             print("Fixed %d sequences."%num_seqs)
 
+    def is_valid(self,letter):
+        return ("ACGT".find(letter)>=0)
+
+    def next_valid_position(self,seq,start):
+        while start<len(seq):
+            if self.is_valid(seq[start]):
+                return start
+            start += 1
+        return -1
+
+    def next_invalid_position(self,seq,start):
+        while start<len(seq):
+            if not self.is_valid(seq[start]):
+                return start
+            start += 1
+        return -1
+
     def print_prev(self,outfile,defline,seqs):
         NL='\n'
         part = 1
+        continuation=None
         if defline is not None and len(seqs)>0:
             outfile.write(defline+NL)
             for seq in seqs:
                 if seq==0:  # indicator that there was N here
                     part += 1
                     continuation=defline+"-part-"+str(part)
-                    outfile.write(NL+continuation+NL)
-                else:
+                elif len(seq)>0:
+                    if continuation is not None:
+                        outfile.write(NL+continuation+NL)
+                        continuation=None
                     outfile.write(seq)
             outfile.write(NL)
 
     def remove_leading_nrun(self,str):
-        Nchar='N'
-        nextpos=str.find(Nchar)
+        nextpos=self.next_invalid_position(str,0)
         if nextpos==0:
-            # yes, it starts with N
-            while nextpos<len(str) and str[nextpos]==Nchar:
-                # skip to first non-N
-                nextpos += 1
-            if nextpos>=len(str):
+            # yes, it starts with N, so skip to first non-N
+            nextpos=self.next_valid_position(str,nextpos)
+            if nextpos<0:
                 # string was all N
                 str=""
             else:
-                # string started with N
+                # remove leading N
                 str=str[nextpos:]
         return str
 
     def split_first_nrun(self,str):
-        Nchar='N'
         prefix=str
         suffix = None
-        nextpos=str.find(Nchar)
+        nextpos=self.next_invalid_position(str,0)
         if nextpos==0:
             raise Exception ("Not expecting a string that starts with N.")
         if nextpos>0:
             prefix=str[:nextpos]
-            while nextpos<len(str) and str[nextpos]==Nchar:
-                nextpos += 1
-            if nextpos < len(str):
+            nextpos=self.next_valid_position(str,nextpos)
+            if nextpos>=0:
                 suffix = str[nextpos:]
         return (prefix,suffix)
 

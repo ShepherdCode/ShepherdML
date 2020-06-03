@@ -12,7 +12,7 @@ class TestFastaCleaner(unittest.TestCase):
         self.FILE1="test.in.fa"
         self.FILE2="test.out.fa"
         self.FILE3="test.answer.fa"
-        self.cleanup=False
+        self.cleanup=True
     def tearDown(self):
         if (self.cleanup):
             try:
@@ -24,6 +24,28 @@ class TestFastaCleaner(unittest.TestCase):
         else:
             print("Remember to remove the test files.")
 
+    def test_valid_letter(self):
+        fc = Fasta_Cleaner(self.FILE1,self.FILE2)
+        self.assertTrue(fc.is_valid('A'))
+        self.assertTrue(fc.is_valid('C'))
+        self.assertTrue(fc.is_valid('G'))
+        self.assertTrue(fc.is_valid('T'))
+        self.assertFalse(fc.is_valid('t'))
+        self.assertFalse(fc.is_valid('N'))
+        self.assertFalse(fc.is_valid('b'))
+        self.assertFalse(fc.is_valid('Y'))
+
+    def test_next_valid_position(self):
+        fc = Fasta_Cleaner(self.FILE1,self.FILE2)
+        self.assertEqual(fc.next_valid_position('ACGNBG',0),0)
+        self.assertEqual(fc.next_valid_position('NBYACG',0),3)
+        self.assertEqual(fc.next_valid_position('NBYYYG',0),5)
+        self.assertEqual(fc.next_valid_position('NBYnby',0),-1)
+        self.assertEqual(fc.next_valid_position('NBYACG',3),3)
+        self.assertEqual(fc.next_valid_position('NBYACG',2),3)
+        self.assertEqual(fc.next_invalid_position('NBYYYG',0),0)
+        self.assertEqual(fc.next_invalid_position('ACGGTT',0),-1)
+
     def test_one_good_sequence(self):
         with open(self.FILE1,'w') as fa:
             writeline(fa,">one_good")
@@ -31,6 +53,21 @@ class TestFastaCleaner(unittest.TestCase):
         fc = Fasta_Cleaner(self.FILE1,self.FILE2)
         fc.fix_everything()
         same=os.system("diff %s %s"%(self.FILE1,self.FILE2))
+        self.assertEqual(same,0)
+
+    def test_invalid_letters(self):
+        good_sequence="ACGTAA"
+        bad_sequence="BDHKMNRSVWYbdhkmnrsvwy"
+        with open(self.FILE1,'w') as fa:
+            writeline(fa,">bad_letters")
+            writeline(fa,good_sequence+bad_sequence)
+            writeline(fa,bad_sequence)
+        with open(self.FILE3,'w') as fa:
+            writeline(fa,">bad_letters")
+            writeline(fa,good_sequence)
+        fc = Fasta_Cleaner(self.FILE1,self.FILE2)
+        fc.fix_everything()
+        same=os.system("diff %s %s"%(self.FILE2,self.FILE3))
         self.assertEqual(same,0)
 
     def test_upper_and_lower_case(self):
