@@ -4,17 +4,12 @@ import os
 import sys
 from datetime import datetime
 
-def say(say1="",say2=""):
-    if args.debug:
-        print (datetime.now(),end=' ')
-        print (say1,end=' ')
-        print (say2)
-
 class Fasta_Cleaner():
-    def __init__(self,infile,outfile):
+    def __init__(self,infile,outfile,debug=False):
         self.infile = infile
         self.outfile = outfile
         self.DEFLINE_PREFIX='>'
+        self.debug=debug
 
     def fix_everything(self):
         Nchar='N'
@@ -22,13 +17,15 @@ class Fasta_Cleaner():
         defline=None
         with open(self.outfile, 'w') as outfa:
             with open(self.infile, 'r') as infa:
+                num_seqs = 0
                 for line in infa:
                     line=line.rstrip()
                     if line[0]==self.DEFLINE_PREFIX:
                         self.print_prev(outfa,defline,prev_seq)
                         prev_seq=[]
                         defline=line
-                        ends_in_n = False
+                        ends_in_n = False  # can we get rid of this?
+                        num_seqs += 1
                     else:
                         if ends_in_n:
                             prev_seq.append(0)  # indicate Ns came before
@@ -45,6 +42,8 @@ class Fasta_Cleaner():
                                 prev_seq.append(prefix)
                 # Last sequence is special case
                 self.print_prev(outfa,defline,prev_seq)
+        if (self.debug):
+            print("Fixed %d sequences."%num_seqs)
 
     def print_prev(self,outfile,defline,seqs):
         NL='\n'
@@ -52,12 +51,13 @@ class Fasta_Cleaner():
         if defline is not None and len(seqs)>0:
             outfile.write(defline+NL)
             for seq in seqs:
-                if seq==0:
+                if seq==0:  # indicator that there was N here
                     part += 1
                     continuation=defline+"-part-"+str(part)
-                    outfile.write(continuation+NL)
+                    outfile.write(NL+continuation+NL)
                 else:
-                    outfile.write(seq+NL)
+                    outfile.write(seq)
+            outfile.write(NL)
 
     def remove_leading_nrun(self,str):
         Nchar='N'
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     '''Inspect & fix a FASTA file of DNA sequences.'''
     try:
         args_parse()
-        fixer = Fasta_Cleaner(args.infile,args.outfile)
+        fixer = Fasta_Cleaner(args.infile,args.outfile,args.debug)
         fixer.fix_everything()
     except Exception:
         print()
