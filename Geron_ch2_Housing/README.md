@@ -1,10 +1,10 @@
 # Machine Learning - Housing
 Hands-On Machine Learning by Aurelien Geron.\
+old/Housing 1-6 was our initial evaluation of the book. Followed along. Didn't understand it all.
 Chapter 2 - End-to-End Project with California housing prices.
-
-Housing 1-6 was first try. Followed book. Didn't understand it all.
-
-Step 1-6 was second try. Experimented more. Changed things.
+Chapter 3 - Classification.
+Chapter 4 - Regression.
+Chapter 5 - SVM.
 
 ## Installation
 
