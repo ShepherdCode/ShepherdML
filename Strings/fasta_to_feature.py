@@ -27,6 +27,21 @@ class FeatureVector:
         self.counts[kmerid] += cnt
     def get_array(self):
         return self.counts
+    def get_names(self):
+        letters=['A','C','G','T']
+        names=[]
+        for i in range(self.max):
+            kmer=""
+            number = i
+            for pos in range(self.k-1,-1,-1):
+                place=pow(4,pos)
+                digit=0
+                while number>=place:
+                    digit += 1
+                    number -= place
+                kmer += letters[digit]
+            names.append(kmer)
+        return names
 
 class FileProcessor:
     def __init__(self,infile,outprefix,wordsize):
@@ -42,6 +57,10 @@ class FileProcessor:
         '''Make features from a oneline fasta file.'''
         with open(self.outfile,self.WRITE,newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
+            feature_names = self.features.get_names()
+            header=['label','seqname']
+            header += feature_names
+            writer.writerow(header)
             with open(self.infile,self.READONLY) as infile:
                 is_defline=False
                 seqname=""
