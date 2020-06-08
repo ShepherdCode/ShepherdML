@@ -1,6 +1,7 @@
 import argparse
 import traceback
 import sys
+import csv
 
 class FeatureVector:
     '''Keep count of every k-mer.'''
@@ -23,37 +24,43 @@ class FeatureVector:
         if (len(kmer)!=self.k):
             raise Exception("Invalid k-mer: "+kmer)
         kmerid = self.kmer_to_int(kmer)
-        print(kmer)
-        print(kmerid)
         self.counts[kmerid] += cnt
 
 class FileProcessor:
-    def __init__(self,infile,outprefix):
+    def __init__(self,infile,outprefix,wordsize):
+        self.wordsize = wordsize
         self.infile = infile
-        self.outprefix = outprefix
+        self.outfile = outprefix+".features.csv"
         self.DEFLINE='>' # fasta indicator
         self.NEWLINE="\n\r"  # universal
         self.READONLY="r"
         self.WRITE="w"
-    def make_features(self,wordsize,label):
+    def make_features(self,label):
         '''Make features from a oneline fasta file.'''
-        with open(self.infile,self.READONLY) as f:
-            is_defline=False
-            seqnum=0
-            for line in f:
-                T=line.rstrip(self.NEWLINE)
-                if T[0]==self.DEFLINE:
-                    if is_defline:
-                        raise Exception('Defline. Is this a oneline fasta? '+str(seqnum))
-                    is_defline = True
-                    seqname=T[1:]
-                else:
-                    if not is_defline:
-                        raise Exception('Sequence. Is this a oneline fasta? '+str(seqnum))
-                    is_defline = False
-                    sequence = T
-                    features=self.process(sequence,wordsize)
-    def process(self,seq,k):
+        with open(self.outfile,self.WRITE,newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            with open(self.infile,self.READONLY) as infile:
+                is_defline=False
+                seqname=""
+                for line in infile:
+                    T=line.rstrip(self.NEWLINE)
+                    if T[0]==self.DEFLINE:
+                        if is_defline:
+                            raise Exception('Defline. Is this a oneline fasta? '+str(seqnum))
+                        is_defline = True
+                        seqname=T[1:].split(' ')[0] # first word
+                    else:
+                        if not is_defline:
+                            raise Exception('Sequence. Is this a oneline fasta? '+str(seqnum))
+                        is_defline = False
+                        vec=self.extract_kmer_counts(T)
+                        self.process_seq(label,seqname,vec,writer)
+    def process_seq(self,label,seqname,features,writer):
+        row=(label,seqname)
+        print(row)
+        writer.writerow(row)
+    def extract_kmer_counts(self,seq):
+        k=self.wordsize
         features = FeatureVector(k)
         print("Working on "+seq)
         n = len(seq)
@@ -85,8 +92,8 @@ if __name__ == '__main__':
     '''Translate fasta to feature file.'''
     try:
         args_parse()
-        fp=FileProcessor(args.inFile,args.outPrefix)
-        fp.make_features(args.k,args.label)
+        fp=FileProcessor(args.inFile,args.outPrefix,args.k)
+        fp.make_features(args.label)
     except Exception:
         if args.debug:
             print(traceback.format_exc())
