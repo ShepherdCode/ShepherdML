@@ -2,38 +2,30 @@ import argparse
 import traceback
 import sys
 
-class KmerHistogram:
+class FeatureVector:
+    '''Keep count of every k-mer.'''
+    ALPHABET_SIZE=4 ## assumed
     def __init__(self,k):
         self.k=k
-        self.counts={} # dict
-        self.last_kmers=[] # list
-    def get_k(self):
-        return self.k
-    def check_k(self,kmer):
-        if len(kmer)!=self.k:
-            print("Expected len "+str(self.k)+", received "+kmer)
-            raise Exception
-    def get_freq(self,kmer):
-        self.check_k(kmer)
-        if not kmer in self.counts:
-            return 0
-        return(self.counts[kmer])
+        self.max=pow(4,self.k)
+        self.counts=[0]*self.max
+        self.digits={'A':0,'C':1,'G':2,'T':3}
+    def kmer_to_int(self,kmer):
+        value=0
+        power=1
+        for i in range(self.k-1,-1,-1):
+            letter = kmer[i]
+            digit = self.digits[letter]
+            value += power * digit
+            power = power * 4
+        return value
     def increment_count(self,kmer,cnt=1):
-        self.check_k(kmer)
-        if kmer not in self.counts:
-            self.counts[kmer]=0
-        self.counts[kmer] += cnt
-    def get_kmers(self):
-        return self.counts.keys()
-    def get_items(self):
-        return self.counts.items()
-    def add_last_kmer(self,kmer):
-        self.last_kmers.append(kmer)
-    def get_last_kmers(self):
-        return(self.last_kmers)
-    def print(self,ff=sys.stdout):
-        for kmer in sorted(self.counts):
-            print("%s = %d"%(kmer,self.counts[kmer]),file=ff)
+        if (len(kmer)!=self.k):
+            raise Exception("Invalid k-mer: "+kmer)
+        kmerid = self.kmer_to_int(kmer)
+        print(kmer)
+        print(kmerid)
+        self.counts[kmerid] += cnt
 
 class FileProcessor:
     def __init__(self,infile,outprefix):
@@ -62,12 +54,12 @@ class FileProcessor:
                     sequence = T
                     features=self.process(sequence,wordsize)
     def process(self,seq,k):
-        features = []
+        features = FeatureVector(k)
         print("Working on "+seq)
         n = len(seq)
-        for i in range(n):
+        for i in range(n-k+1):
             kmer=seq[i:i+k]
-            features.append(kmer)  ## needs work
+            features.increment_count(kmer)  ## needs work
         return features
 
 def args_parse():
@@ -83,7 +75,7 @@ def args_parse():
         'label', help='class (int)', type=int)
     parser.add_argument(
         '--k', help='Size of k-mer (4).',
-        type=int, default=5)
+        type=int, default=4)
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
