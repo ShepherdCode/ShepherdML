@@ -25,6 +25,8 @@ class FeatureVector:
             raise Exception("Invalid k-mer: "+kmer)
         kmerid = self.kmer_to_int(kmer)
         self.counts[kmerid] += cnt
+    def get_array(self):
+        return self.counts
 
 class FileProcessor:
     def __init__(self,infile,outprefix,wordsize):
@@ -35,6 +37,7 @@ class FileProcessor:
         self.NEWLINE="\n\r"  # universal
         self.READONLY="r"
         self.WRITE="w"
+        self.features = FeatureVector(wordsize)
     def make_features(self,label):
         '''Make features from a oneline fasta file.'''
         with open(self.outfile,self.WRITE,newline='') as csvfile:
@@ -53,21 +56,19 @@ class FileProcessor:
                         if not is_defline:
                             raise Exception('Sequence. Is this a oneline fasta? '+str(seqnum))
                         is_defline = False
-                        vec=self.extract_kmer_counts(T)
-                        self.process_seq(label,seqname,vec,writer)
-    def process_seq(self,label,seqname,features,writer):
-        row=(label,seqname)
-        print(row)
+                        self.extract_kmer_counts(T)
+                        self.process_seq(label,seqname,writer)
+    def process_seq(self,label,seqname,writer):
+        vec=self.features.get_array()
+        row=[label,seqname]
+        row += vec
         writer.writerow(row)
     def extract_kmer_counts(self,seq):
         k=self.wordsize
-        features = FeatureVector(k)
-        print("Working on "+seq)
         n = len(seq)
         for i in range(n-k+1):
             kmer=seq[i:i+k]
-            features.increment_count(kmer)  ## needs work
-        return features
+            self.features.increment_count(kmer)  ## needs work
 
 def args_parse():
     '''Parse command-line arguments.'''
