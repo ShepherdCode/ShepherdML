@@ -22,6 +22,7 @@ class FastaLabeler():
         self.say("celltype="+celltype)
         self.celltype=celltype
     def parse_atlas(self):
+        DB=self.database
         with open(self.atlas,'r') as csvfile:
             reader=csv.DictReader(csvfile)
             for row in reader:
@@ -29,11 +30,19 @@ class FastaLabeler():
                 celltype=row['Data Source']
                 measure=row['Data Type']
                 score=row['Value']
-                genetype=['Biotype']
-                if genetype==self.noncoding:
-                    if measure==self.measure:
-                        if celltype==self.celltype:
-                            self.database[gene]=score
+                genetype=row['Biotype']
+                if self.is_numeric(score) and \
+                genetype==self.noncoding and \
+                measure==self.measure and \
+                celltype==self.celltype: \
+                    DB[gene]=score
+
+    def is_numeric(self,str):
+        try:
+            val=float(str)
+            return True
+        except ValueError:
+            return False
 
     def say(self,message):
         if (self.debug_mode):
@@ -43,15 +52,26 @@ class FastaLabeler():
         self.parse_atlas()
         defline=""
         sequence=""
+        gene=""
+        DB = self.database
         with open(self.infile,'r') as innie:
             with open(self.outfile,'w') as outie:
                 for line in innie:
                     if (line[0]=='>'):
-                        defline=line
+                        defline=""
+                        rawline=line.rstrip()
+                        fields=line.split(' ')
+                        geneversion=fields[0][1:]
+                        fields=geneversion.split('.')
+                        gene=fields[0]
+                        if gene in DB.keys():
+                            score=DB[gene]
+                            defline = rawline + ' ' + score + '\n'
                     else:
-                        sequence=line
-                        outie.write(defline)
-                        outie.write(sequence)
+                        if len(defline)>0:
+                            sequence=line
+                            outie.write(defline)
+                            outie.write(sequence)
 
 def args_parse():
     global args
