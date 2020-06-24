@@ -53,7 +53,10 @@ class FileProcessor:
         self.READONLY="r"
         self.WRITE="w"
         self.features = FeatureVector(wordsize)
-    def make_features(self,label):
+        self.uniform_label = None
+    def set_uniform_label(self,label):
+        self.uniform_label = label
+    def make_features(self):
         '''Make features from a oneline fasta file.'''
         with open(self.outfile,self.WRITE,newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
@@ -64,19 +67,26 @@ class FileProcessor:
             with open(self.infile,self.READONLY) as infile:
                 is_defline=False
                 seqname=""
+                label=""
                 for line in infile:
                     T=line.rstrip(self.NEWLINE)
                     if T[0]==self.DEFLINE:
                         if is_defline:
                             raise Exception('Defline. Is this a oneline fasta? '+str(seqnum))
                         is_defline = True
-                        seqname=T[1:].split(' ')[0] # first word
+                        fields=T[1:].split(' ')
+                        seqname=fields[0]
+                        if self.uniform_label is None:
+                            label=fields[-1]
+                        else:
+                            label=self.uniform_label
                     else:
                         if not is_defline:
                             raise Exception('Sequence. Is this a oneline fasta? '+str(seqnum))
                         is_defline = False
                         self.extract_kmer_counts(T)
                         self.process_seq(label,seqname,writer)
+
     def process_seq(self,label,seqname,writer):
         vec=self.features.get_array()
         row=[label,seqname]
@@ -99,7 +109,7 @@ def args_parse():
     parser.add_argument(
         'outPrefix', help='output file prefix (csv)', type=str)
     parser.add_argument(
-        'label', help='class (int)', type=int)
+        '--label', help='same label for all (int)', type=int)
     parser.add_argument(
         '--k', help='Size of k-mer (4).',
         type=int, default=4)
@@ -113,7 +123,9 @@ if __name__ == '__main__':
     try:
         args_parse()
         fp=FileProcessor(args.inFile,args.outPrefix,args.k)
-        fp.make_features(args.label)
+        if (args.label is not None):
+            fp.set_uniform_label(args.label)
+        fp.make_features()
     except Exception:
         if args.debug:
             print(traceback.format_exc())
