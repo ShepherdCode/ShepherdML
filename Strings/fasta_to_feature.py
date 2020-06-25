@@ -12,6 +12,7 @@ class FeatureVector:
         self.counts=[0]*self.max
         self.digits={'A':0,'C':1,'G':2,'T':3}
     def kmer_to_int(self,kmer):
+        '''Compute K-mer's position in array or alphabetical list.'''
         value=0
         power=1
         for i in range(self.k-1,-1,-1):
@@ -21,13 +22,16 @@ class FeatureVector:
             power = power * 4
         return value
     def increment_count(self,kmer,cnt=1):
+        '''Given K-mer and count, add to existing count.'''
         if (len(kmer)!=self.k):
             raise Exception("Invalid k-mer: "+kmer)
         kmerid = self.kmer_to_int(kmer)
         self.counts[kmerid] += cnt
     def get_array(self):
+        '''Return array of counts in alphabetical order.'''
         return self.counts
     def get_names(self):
+        '''Return list of all possible K-mers in alphabetical order.'''
         letters=['A','C','G','T']
         names=[]
         for i in range(self.max):
@@ -55,9 +59,10 @@ class FileProcessor:
         self.features = FeatureVector(wordsize)
         self.uniform_label = None
     def set_uniform_label(self,label):
+        '''Assign same label to every instance in this file.'''
         self.uniform_label = label
     def make_features(self):
-        '''Make features from a oneline fasta file.'''
+        '''Make csv file from a oneline fasta file.'''
         with open(self.outfile,self.WRITE,newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             feature_names = self.features.get_names()
@@ -92,7 +97,9 @@ class FileProcessor:
         row=[label,seqname]
         row += vec
         writer.writerow(row)
-    def extract_kmer_counts(self,seq):
+    def extract_kmer_counts(self,seq,cumulative=False):
+        if not cumulative:
+            self.features = FeatureVector(self.wordsize)
         k=self.wordsize
         n = len(seq)
         for i in range(n-k+1):
