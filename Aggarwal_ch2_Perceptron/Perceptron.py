@@ -5,7 +5,6 @@ One output node.
 Activation function is linear/identity for training.
 Loss function is (0-(y*yhat)).
 Gradient descent is W=W+yX[(y*yhat<0)?1:0].
-Learn rate alpha would have no effect.
 Forget rate delta (regularization) not recommended.
 Activation function is sign(W*X) for prediction. Predicts -1 or +1.
 See Charu Aggarwal chapter 1 exercise 6.
@@ -24,8 +23,10 @@ class OutputLayer ():
     def get_weights(self):
         return (self.w1,self.w2)
     def adjust_weights(self,w1_delta,w2_delta):
+        #say("weights before adjust="+str((self.w1,self.w2)))
         self.w1 += w1_delta
         self.w2 += w2_delta
+        #say("weights after adjust="+str((self.w1,self.w2)))
 class Perceptron ():
     def __init__(self):
         self.out = OutputLayer()
@@ -49,26 +50,28 @@ class Perceptron ():
     def train_one(self,x1,x2,y):
         #say("initial W = "+str(self.out.get_weights()))
         yhat = self.classify_one(x1,x2)
-        #say("yhat = "+str(yhat))
         loss = y-yhat
+        #say("loss=y-yhat %f=%f-%f"%(loss,y,yhat))
         adj_loss = self.alpha*loss
         #say("adj loss = "+str(adj_loss))
         w1_delta = adj_loss*x1
         w2_delta = adj_loss*x2
         #say("delta = "+str((w1_delta,w2_delta)))
         self.out.adjust_weights(w1_delta,w2_delta)
-        #say("adjusted W = "+str(self.out.get_weights()))
+        say("adjusted W = "+str(self.out.get_weights()))
     def train(self,csvfilename):
         for i in range(0,self.epochs):
             # TO DO: load the file rather than re-open it
             with open (csvfilename,"r") as csvfile:
                 reader = csv.reader(csvfile,delimiter=',')
                 for line in reader:
-                    (x1,x2,y)=line
+                    (y,x1,x2)=line
                     x1=float(x1)
                     x2=float(x2)
                     y=int(y)
                     self.train_one(x1,x2,y)
+            say("Epoch "+str(i))
+            say("Weights="+str(self.show_weights()))
     def classify(self,csvfilename):
         with open (csvfilename,"r") as csvfile:
             reader = csv.reader(csvfile,delimiter=',')
@@ -77,7 +80,7 @@ class Perceptron ():
                 x1=float(x1)
                 x2=float(x2)
                 yhat=self.classify_one(x1,x2)
-                say("Point (%d,%d) classified %d"%(x1,x2,yhat))
+                print("Point (%d,%d) classified %d"%(x1,x2,yhat))
 
 def say(statement):
     try:
