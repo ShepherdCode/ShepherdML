@@ -278,6 +278,8 @@ if __name__ == '__main__':
             nn.classify_file(args.classify)
     except Exception as e:
         print("\nThere was an error.")
+        print("Try this test:")
+        print("python3 Softmax.py --example EX --train EX.labeled.csv --classify EX.unlabeled.csv --debug")
         if args.debug:
             print(traceback.format_exc())
         else:
