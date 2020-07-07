@@ -20,10 +20,26 @@ class Filter():
         sequence=self.processing_callback(sequence)
         return sequence
 
+class Defline_Parser(Filter):
+    def processing_callback(self,sequence):
+        if len(sequence.defline)>0:
+            fields=sequence.defline.split('|')
+            try:
+                transcript=fields[0]
+                gene=fields[1]
+                length=int(fields[6])
+                sequence.defline="%s %s %d"%(transcript,gene,length)
+            except:
+                raise Exception('Cannot parse defline '+sequence.defline)
+        return sequence
+
 class Gencode_Preprocess():
     def __init__(self,debug=False):
         self.debug=debug
         self.filters=[Filter()]
+
+    def add_filter(self,filter):
+        self.filters.append(filter)
 
     def process_fasta(self,infile,outfile):
         lines=[]
@@ -69,6 +85,7 @@ if __name__ == "__main__":
     try:
         args_parse()
         fixer = Gencode_Preprocess(args.debug)
+        fixer.add_filter(Defline_Parser())
         fixer.process_fasta(args.infile,args.outfile)
     except Exception:
         print()
