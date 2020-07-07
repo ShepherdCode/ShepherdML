@@ -7,11 +7,25 @@ from datetime import datetime
 
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
+FIELD_SEPARATOR_IN='|'
+FIELD_SEPARATOR_OUT=' '
 
 class Sequence():
     def __init__(self):
         self.defline=''
         self.seqline=''
+
+def parse_defline(defline):
+    try:
+        fields=defline.split(FIELD_SEPARATOR_IN)
+        transcript=fields[0]
+        gene=fields[1]
+        length=int(fields[6])
+    except Exception as e:
+        print('Cannot parse defline '+defline)
+        print(e)
+        raise Exception
+    return (transcript,gene,length)
 
 class Filter():
     def processing_callback(self,sequence):
@@ -20,18 +34,27 @@ class Filter():
         sequence=self.processing_callback(sequence)
         return sequence
 
-class Defline_Parser(Filter):
+class Filter_N(Filter):
+    def processing_callback(self,sequence):
+        if 'N' in sequence.seqline:
+            return Sequence()
+        return sequence
+
+class All_Caps(Filter):
+    def processing_callback(self,sequence):
+        sequence.seqline=sequence.seqline.upper()
+        return sequence
+
+class Filter_By_ID(Filter):
+    def __init__(self,keepers):
+        self.keepers=keepers
+        Filter.__init__(self)
     def processing_callback(self,sequence):
         if len(sequence.defline)>0:
-            fields=sequence.defline.split('|')
-            try:
-                transcript=fields[0]
-                gene=fields[1]
-                length=int(fields[6])
-                sequence.defline="%s %s %d"%(transcript,gene,length)
-            except:
-                raise Exception('Cannot parse defline '+sequence.defline)
-        return sequence
+            (tid,gid,slen)=parse_defline(sequence.defline)
+            if tid in self.keepers:
+                return sequence
+        return Sequence()
 
 class Gencode_Preprocess():
     def __init__(self,debug=False):
@@ -62,10 +85,31 @@ class Gencode_Preprocess():
             seq.seqline += line
         for filter in self.filters:
             seq=filter.process_one_sequence(seq)
-        if len(seq.defline)>0:
+        if len(seq.defline)>0 and len(seq.seqline)>0:
             outfile.write(seq.defline+NEWLINE)
-            if len(seq.seqline)>0:
-                outfile.write(seq.seqline+NEWLINE)
+            outfile.write(seq.seqline+NEWLINE)
+
+    def longest_transcript_per_gene(self,infile):
+        transcript_per_gene={}
+        length_per_gene={}
+        with open(infile, 'r') as infa:
+            for line in infa:
+                if line[0]==DEFLINE_PREFIX:
+                    (tid,gid,slen)=parse_defline(line)
+                    firstone = False
+                    longerone = False
+                    if not gid in transcript_per_gene:
+                        firstone = True
+                    else:
+                        prevlen=length_per_gene[gid]
+                        if slen>prevlen:
+                            longerone = True
+                    if firstone or longerone:
+                        transcript_per_gene[gid]=tid
+                        length_per_gene[gid]=slen
+        good_tid_list=transcript_per_gene.values()
+        good_tid_dict=dict.fromkeys(good_tid_list,1)
+        return good_tid_dict
 
 def args_parse():
     global args
@@ -85,7 +129,10 @@ if __name__ == "__main__":
     try:
         args_parse()
         fixer = Gencode_Preprocess(args.debug)
-        fixer.add_filter(Defline_Parser())
+        keepers = fixer.longest_transcript_per_gene(args.infile)
+        fixer.add_filter(All_Caps())
+        fixer.add_filter(Filter_N())
+        fixer.add_filter(Filter_By_ID(keepers))
         fixer.process_fasta(args.infile,args.outfile)
     except Exception:
         print()
