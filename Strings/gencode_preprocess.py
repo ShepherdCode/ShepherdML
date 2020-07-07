@@ -8,25 +8,17 @@ from datetime import datetime
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
 
-class Filter():
-    def processing_callback(self):
-        pass # override this
-    def max_one_sequence(self):
-        pass # TO DO : raise exception
-    def process_one_sequence(self,lines):
-        self.lines=lines
-        self.max_one_sequence()
-        self.processing_callback()
-        return self.lines
+class Sequence():
+    def __init__(self):
+        self.defline=''
+        self.seqline=''
 
-class Remove_Newlines(Filter):
-    def processing_callback(self):
-        defline=''
-        seqline=''
-        revised=[]
-        for line in self.lines:
-            if line[0]==DEFLINE_PREFIX:
-                pass
+class Filter():
+    def processing_callback(self,sequence):
+        return sequence # override this
+    def process_one_sequence(self,sequence):
+        sequence=self.processing_callback(sequence)
+        return sequence
 
 class Gencode_Preprocess():
     def __init__(self,debug=False):
@@ -41,17 +33,23 @@ class Gencode_Preprocess():
                     line=line.rstrip()
                     if line[0]==DEFLINE_PREFIX:
                         if len(lines)>0:
-                            self.process_one_seq(lines,outfa)
+                            self.write_one_seq(lines,outfa)
                             lines=[]
                     lines.append(line)
                 if len(lines)>0:
-                    self.process_one_seq(lines,outfa)
+                    self.write_one_seq(lines,outfa)
 
-    def process_one_seq(self,lines,outfile):
+    def write_one_seq(self,line_array,outfile):
+        seq=Sequence()
+        seq.defline=line_array[0]
+        for line in line_array[1:]:
+            seq.seqline += line
         for filter in self.filters:
-            lines=filter.process_one_sequence(lines)
-        for line in lines:
-            outfile.write(line+NEWLINE)
+            seq=filter.process_one_sequence(seq)
+        if len(seq.defline)>0:
+            outfile.write(seq.defline+NEWLINE)
+            if len(seq.seqline)>0:
+                outfile.write(seq.seqline+NEWLINE)
 
 def args_parse():
     global args
