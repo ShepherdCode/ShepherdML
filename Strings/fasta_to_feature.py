@@ -23,6 +23,7 @@ class FeatureVector:
         self.max=pow(self.ALPHABET_SIZE,self.k)
         self.counts=[0]*self.max
         self.digits={'A':0,'C':1,'G':2,'T':3}
+        self.last_kmer=None
     def kmer_to_int(self,kmer):
         '''Compute K-mer's position in array or alphabetical list.'''
         value=0
@@ -39,6 +40,7 @@ class FeatureVector:
             raise Exception("Invalid k-mer: "+kmer)
         kmerid = self.kmer_to_int(kmer)
         self.counts[kmerid] += cnt
+        self.last_kmer=kmer
     def get_array(self):
         '''Return array of counts in alphabetical order.'''
         return self.counts
@@ -59,16 +61,20 @@ class FeatureVector:
             names.append(kmer)
         return names
     def next_size_down(self):
-        '''Generate new FeatureVector for k-1.'''
+        '''Generate new FeatureVector for k-1.
+        '''
         newfv=FeatureVector(self.k-1)
         countup=0
         target=0
-        for count in range(len(self.counts)):
+        for i in range(len(self.counts)):
+            count=self.counts[i]
             newfv.counts[target]+=count
             countup += 1
             if (countup==self.ALPHABET_SIZE):
                 target += 1
                 countup=0
+        last_kmer=self.last_kmer[1:]
+        newfv.increment_count(last_kmer)
         return newfv
 
 class FileProcessor:
