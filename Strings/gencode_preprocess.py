@@ -4,6 +4,7 @@ import os
 import sys
 #import re
 from datetime import datetime
+#import statistics
 
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
@@ -14,17 +15,18 @@ class Sequence():
         self.defline=''
         self.seqline=''
 
-def parse_defline(defline):
-    try:
-        fields=defline.split(FIELD_SEPARATOR)
-        transcript=fields[0]
-        gene=fields[1]
-        length=int(fields[6])
-    except Exception as e:
-        print('Cannot parse defline '+defline)
-        print(e)
-        raise Exception
-    return (transcript,gene,length)
+class Parser():
+    def parse_defline(defline):
+        try:
+            fields=defline.split(FIELD_SEPARATOR)
+            transcript=fields[0]
+            gene=fields[1]
+            length=int(fields[6])
+        except Exception as e:
+            print('Cannot parse defline '+defline)
+            print(e)
+            raise Exception
+        return (transcript,gene,length)
 
 class Filter():
     def processing_callback(self,sequence):
@@ -52,7 +54,7 @@ class Pretty_Defline(Filter):
         defline=sequence.defline
         sn=self.sequence_counter
         if len(defline)>0:
-            (transcript,gene,length)=parse_defline(defline)
+            (transcript,gene,length)=Parser.parse_defline(defline)
             slen=int(length)
             sequence.defline="%s %s len%d seq%d"%(transcript,gene,slen,sn)
             sn += 1
@@ -64,7 +66,7 @@ class Filter_By_ID(Filter):
         Filter.__init__(self)
     def processing_callback(self,sequence):
         if len(sequence.defline)>0:
-            (tid,gid,slen)=parse_defline(sequence.defline)
+            (tid,gid,slen)=Parser.parse_defline(sequence.defline)
             if tid in self.keepers:
                 return sequence
         return Sequence()
@@ -108,7 +110,7 @@ class Gencode_Preprocess():
         with open(infile, 'r') as infa:
             for line in infa:
                 if line[0]==DEFLINE_PREFIX:
-                    (tid,gid,slen)=parse_defline(line)
+                    (tid,gid,slen)=Parser.parse_defline(line)
                     firstone = False
                     longerone = False
                     if not gid in transcript_per_gene:
@@ -122,6 +124,28 @@ class Gencode_Preprocess():
                         length_per_gene[gid]=slen
         good_tid_list=transcript_per_gene.values()
         good_tid_dict=dict.fromkeys(good_tid_list,1)
+        return good_tid_dict
+
+    def getLen(tuple):
+        return tuple[2]
+
+    def median_transcript_per_gene(self,infile):
+        transcripts_per_gene={}
+        with open(infile, 'r') as infa:
+            for line in infa:
+                if line[0]==DEFLINE_PREFIX:
+                    (tid,gid,slen)=Parser.parse_defline(line)
+                    if not gid in transcripts_per_gene:
+                        transcripts_per_gene[gid]=[]
+                    tuple=(tid,gid,slen)
+                    transcripts_per_gene[gid].append(tuple)
+        good_tid_dict={}
+        for transcripts_one_gene in transcripts_per_gene.values():
+            sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
+            print(sorted_tuples)
+            min_tuple = sorted_tuples[0]
+            min_tid=min_tuple[0]
+            good_tid_dict[min_tid]=1
         return good_tid_dict
 
 def args_parse():
@@ -142,7 +166,8 @@ if __name__ == "__main__":
     try:
         args_parse()
         fixer = Gencode_Preprocess(args.debug)
-        keepers = fixer.longest_transcript_per_gene(args.infile)
+        #keepers = fixer.longest_transcript_per_gene(args.infile)
+        keepers = fixer.median_transcript_per_gene(args.infile)
         fixer.add_filter(All_Caps())
         fixer.add_filter(Filter_N())
         fixer.add_filter(Filter_By_ID(keepers))
