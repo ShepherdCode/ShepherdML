@@ -17,10 +17,10 @@ Output: CSV
 
 class FeatureVector:
     '''Keep count of every k-mer.'''
-    ALPHABET_SIZE=4 ## assumed
     def __init__(self,k):
+        self.ALPHABET_SIZE=4 ## assumed
         self.k=k
-        self.max=pow(4,self.k)
+        self.max=pow(self.ALPHABET_SIZE,self.k)
         self.counts=[0]*self.max
         self.digits={'A':0,'C':1,'G':2,'T':3}
     def kmer_to_int(self,kmer):
@@ -31,7 +31,7 @@ class FeatureVector:
             letter = kmer[i]
             digit = self.digits[letter]
             value += power * digit
-            power = power * 4
+            power = power * self.ALPHABET_SIZE
         return value
     def increment_count(self,kmer,cnt=1):
         '''Given K-mer and count, add to existing count.'''
@@ -50,7 +50,7 @@ class FeatureVector:
             kmer=""
             number = i
             for pos in range(self.k-1,-1,-1):
-                place=pow(4,pos)
+                place=pow(self.ALPHABET_SIZE,pos)
                 digit=0
                 while number>=place:
                     digit += 1
@@ -58,6 +58,18 @@ class FeatureVector:
                 kmer += letters[digit]
             names.append(kmer)
         return names
+    def next_size_down(self):
+        '''Generate new FeatureVector for k-1.'''
+        newfv=FeatureVector(self.k-1)
+        countup=0
+        target=0
+        for count in range(len(self.counts)):
+            newfv.counts[target]+=count
+            countup += 1
+            if (countup==self.ALPHABET_SIZE):
+                target += 1
+                countup=0
+        return newfv
 
 class FileProcessor:
     def __init__(self,infile,outprefix,kmax,kmin):
@@ -74,24 +86,26 @@ class FileProcessor:
     def set_first_number(self,basenum):
         self.first_number=basenum
     def open_files(self):
-        self.handles=[]
-        self.writers=[]
-        for k in range(self.wordsize,self.kmin-1,-1):
+        # Waste a little space for clarity.
+        # The handle for k=3 is at handles[3].
+        self.handles=[None]*(1+self.wordsize)
+        self.writers=[None]*(1+self.wordsize)
+        for k in range(self.kmin,self.wordsize+1):
             filename = "%s.%dmer.features.csv"%(self.outfile,k)
             csvfile= open(filename,self.WRITE,newline='')
             writer = csv.writer(csvfile, delimiter=',')
-            self.handles.append(csvfile)
-            self.writers.append(writer)
+            self.handles[k]=csvfile
+            self.writers[k]=writer
+            fvec = FeatureVector(k)
+            feature_names = fvec.get_names()
+            header=['seqnum','seqlen']
+            header += feature_names
+            writer.writerow(header)
     def close_files(self):
         for handle in handles:
             handle.close()
     def make_features(self):
         '''Make csv file from a oneline fasta file.'''
-        writer= self.writers[0]
-        feature_names = self.features.get_names()
-        header=['seqnum','seqlen']
-        header += feature_names
-        writer.writerow(header)
         with open(self.infile,self.READONLY) as infile:
             is_defline=False
             seqnum=self.first_number-1
@@ -110,17 +124,30 @@ class FileProcessor:
                     is_defline = False
                     seqlen=len(T)
                     self.extract_kmer_counts(T)
-                    self.process_seq(seqnum,seqlen,writer)
+                    self.output_features(seqnum,seqlen,self.wordsize,self.features)
+                    self.harvester(seqnum,seqlen)
 
-    def process_seq(self,seqnum,seqlen,writer):
-        vec=self.features.get_array()
+    def output_features(self,seqnum,seqlen,k,features):
+        vec=features.get_array()
         row=[seqnum,seqlen]
         row += vec
+        writer=self.writers[k]
         writer.writerow(row)
-    def extract_kmer_counts(self,seq,cumulative=False):
-        if not cumulative:
-            self.features = FeatureVector(self.wordsize)
+
+    def harvester(self,seqnum,seqlen):
+        '''Extract n-mers for n<K.'''
         k=self.wordsize
+        fv=self.features
+        while k>self.kmin:
+            k -= 1
+            fv = fv.next_size_down()
+            self.output_features(seqnum,seqlen,k,fv)
+
+    def extract_kmer_counts(self,seq):
+        '''Walk the sequence. Increment count per K-mer.'''
+        # Assume not cumulative:
+        k=self.wordsize
+        self.features = FeatureVector(k)
         n = len(seq)
         for i in range(n-k+1):
             kmer=seq[i:i+k]
