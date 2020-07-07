@@ -5,25 +5,33 @@ import sys
 #import re
 from datetime import datetime
 
-class Streamer():
-    def __init__(self):
-        self.streamers=[]
-    def add_streamer(self,streamer):
-        self.streamers.append(streamer)
-    def input(self,instr):
-        self.lines = instr
-    def output(self):
-        lines=self.lines
-        for streamer in self.streamers:
-            streamer.input(lines)
-            lines=streamer.output()
-        return lines
+DEFLINE_PREFIX='>'
+NEWLINE='\n'
 
-class Gencode_Preprocess(Streamer):
+class Filter():
+    def processing_callback(self):
+        pass # override this
+    def max_one_sequence(self):
+        pass # TO DO : raise exception
+    def process_one_sequence(self,lines):
+        self.lines=lines
+        self.max_one_sequence()
+        self.processing_callback()
+        return self.lines
+
+class Remove_Newlines(Filter):
+    def processing_callback(self):
+        defline=''
+        seqline=''
+        revised=[]
+        for line in self.lines:
+            if line[0]==DEFLINE_PREFIX:
+                pass
+
+class Gencode_Preprocess():
     def __init__(self,debug=False):
-        self.DEFLINE_PREFIX='>'
         self.debug=debug
-        Streamer.__init__(self)
+        self.filters=[Filter()]
 
     def process_fasta(self,infile,outfile):
         lines=[]
@@ -31,20 +39,19 @@ class Gencode_Preprocess(Streamer):
             with open(infile, 'r') as infa:
                 for line in infa:
                     line=line.rstrip()
-                    if line[0]==self.DEFLINE_PREFIX:
+                    if line[0]==DEFLINE_PREFIX:
                         if len(lines)>0:
-                            self.process_seq(lines,outfa)
+                            self.process_one_seq(lines,outfa)
                             lines=[]
                     lines.append(line)
                 if len(lines)>0:
-                    self.process_seq(lines,outfa)
+                    self.process_one_seq(lines,outfa)
 
-    def process_seq(self,lines,outfile):
-        NL='\n'
-        self.input(lines)
-        revised=self.output()
-        for line in revised:
-            outfile.write(line+NL)
+    def process_one_seq(self,lines,outfile):
+        for filter in self.filters:
+            lines=filter.process_one_sequence(lines)
+        for line in lines:
+            outfile.write(line+NEWLINE)
 
 def args_parse():
     global args
