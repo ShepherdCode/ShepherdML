@@ -7,8 +7,7 @@ from datetime import datetime
 
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
-FIELD_SEPARATOR_IN='|'
-FIELD_SEPARATOR_OUT=' '
+FIELD_SEPARATOR='|'
 
 class Sequence():
     def __init__(self):
@@ -17,7 +16,7 @@ class Sequence():
 
 def parse_defline(defline):
     try:
-        fields=defline.split(FIELD_SEPARATOR_IN)
+        fields=defline.split(FIELD_SEPARATOR)
         transcript=fields[0]
         gene=fields[1]
         length=int(fields[6])
@@ -43,6 +42,20 @@ class Filter_N(Filter):
 class All_Caps(Filter):
     def processing_callback(self,sequence):
         sequence.seqline=sequence.seqline.upper()
+        return sequence
+
+class Pretty_Defline(Filter):
+    def __init__(self):
+        self.sequence_counter=0
+        Filter.__init__(self)
+    def processing_callback(self,sequence):
+        defline=sequence.defline
+        sn=self.sequence_counter
+        if len(defline)>0:
+            (transcript,gene,length)=parse_defline(defline)
+            slen=int(length)
+            sequence.defline="%s %s len%d seq%d"%(transcript,gene,slen,sn)
+            sn += 1
         return sequence
 
 class Filter_By_ID(Filter):
@@ -133,6 +146,7 @@ if __name__ == "__main__":
         fixer.add_filter(All_Caps())
         fixer.add_filter(Filter_N())
         fixer.add_filter(Filter_By_ID(keepers))
+        fixer.add_filter(Pretty_Defline()) # must be last
         fixer.process_fasta(args.infile,args.outfile)
     except Exception:
         print()
