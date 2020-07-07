@@ -60,45 +60,57 @@ class FeatureVector:
         return names
 
 class FileProcessor:
-    def __init__(self,infile,outprefix,wordsize):
-        self.wordsize = wordsize
+    def __init__(self,infile,outprefix,kmax,kmin):
+        self.wordsize = kmax
+        self.kmin=kmin
         self.infile = infile
-        self.outfile = outprefix+".features.csv"
+        self.outfile = outprefix
         self.DEFLINE='>' # fasta indicator
         self.NEWLINE="\n\r"  # universal
         self.READONLY="r"
         self.WRITE="w"
-        self.features = FeatureVector(wordsize)
+        self.features = FeatureVector(self.wordsize)
         self.first_number=1
     def set_first_number(self,basenum):
         self.first_number=basenum
+    def open_files(self):
+        self.handles=[]
+        self.writers=[]
+        for k in range(self.wordsize,self.kmin-1,-1):
+            filename = "%s.%dmer.features.csv"%(self.outfile,k)
+            csvfile= open(filename,self.WRITE,newline='')
+            writer = csv.writer(csvfile, delimiter=',')
+            self.handles.append(csvfile)
+            self.writers.append(writer)
+    def close_files(self):
+        for handle in handles:
+            handle.close()
     def make_features(self):
         '''Make csv file from a oneline fasta file.'''
-        with open(self.outfile,self.WRITE,newline='') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',')
-            feature_names = self.features.get_names()
-            header=['seqnum','seqlen']
-            header += feature_names
-            writer.writerow(header)
-            with open(self.infile,self.READONLY) as infile:
-                is_defline=False
-                seqnum=self.first_number-1
-                for line in infile:
-                    T=line.rstrip(self.NEWLINE)
-                    if T[0]==self.DEFLINE:
-                        if is_defline:
-                            print(T)
-                            raise Exception('Unexpected defline. Is this a oneline fasta? '+str(seqnum))
-                        is_defline = True
-                        seqnum += 1
-                    else:
-                        if not is_defline:
-                            print(T)
-                            raise Exception('Unexpected sequence. Is this a oneline fasta? '+str(seqnum))
-                        is_defline = False
-                        seqlen=len(T)
-                        self.extract_kmer_counts(T)
-                        self.process_seq(seqnum,seqlen,writer)
+        writer= self.writers[0]
+        feature_names = self.features.get_names()
+        header=['seqnum','seqlen']
+        header += feature_names
+        writer.writerow(header)
+        with open(self.infile,self.READONLY) as infile:
+            is_defline=False
+            seqnum=self.first_number-1
+            for line in infile:
+                T=line.rstrip(self.NEWLINE)
+                if T[0]==self.DEFLINE:
+                    if is_defline:
+                        print(T)
+                        raise Exception('Unexpected defline. Is this a oneline fasta? '+str(seqnum))
+                    is_defline = True
+                    seqnum += 1
+                else:
+                    if not is_defline:
+                        print(T)
+                        raise Exception('Unexpected sequence. Is this a oneline fasta? '+str(seqnum))
+                    is_defline = False
+                    seqlen=len(T)
+                    self.extract_kmer_counts(T)
+                    self.process_seq(seqnum,seqlen,writer)
 
     def process_seq(self,seqnum,seqlen,writer):
         vec=self.features.get_array()
@@ -126,7 +138,10 @@ def args_parse():
     parser.add_argument(
         '--base', help='start numbering at (1)', type=int)
     parser.add_argument(
-        '--k', help='Size of k-mer (4).',
+        '--kmax', help='Max k-mer size (4).',
+        type=int, default=4)
+    parser.add_argument(
+        '--kmin', help='Min k-mer size (kmax).',
         type=int, default=4)
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
@@ -137,8 +152,13 @@ if __name__ == '__main__':
     '''Translate fasta to feature file.'''
     try:
         args_parse()
-        fp=FileProcessor(args.inFile,args.outPrefix,args.k)
-        if (args.base is not None):
+        kmax=args.kmax
+        kmin=args.kmin
+        if kmin>kmax:
+            kmin=kmax
+        fp=FileProcessor(args.inFile,args.outPrefix,kmax,kmin)
+        fp.open_files()
+        if args.base is not None:
             basenum = int(args.base)
             fp.set_first_number(basenum)
         fp.make_features()
