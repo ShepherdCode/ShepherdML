@@ -5,6 +5,7 @@ import sys
 #import re
 from datetime import datetime
 #import statistics
+from math import floor
 
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
@@ -104,32 +105,12 @@ class Gencode_Preprocess():
             outfile.write(seq.defline+NEWLINE)
             outfile.write(seq.seqline+NEWLINE)
 
-    def longest_transcript_per_gene(self,infile):
-        transcript_per_gene={}
-        length_per_gene={}
-        with open(infile, 'r') as infa:
-            for line in infa:
-                if line[0]==DEFLINE_PREFIX:
-                    (tid,gid,slen)=Parser.parse_defline(line)
-                    firstone = False
-                    longerone = False
-                    if not gid in transcript_per_gene:
-                        firstone = True
-                    else:
-                        prevlen=length_per_gene[gid]
-                        if slen>prevlen:
-                            longerone = True
-                    if firstone or longerone:
-                        transcript_per_gene[gid]=tid
-                        length_per_gene[gid]=slen
-        good_tid_list=transcript_per_gene.values()
-        good_tid_dict=dict.fromkeys(good_tid_list,1)
-        return good_tid_dict
-
     def getLen(tuple):
+        '''Expect (tid,gid,slen). Return slen.'''
         return tuple[2]
 
-    def median_transcript_per_gene(self,infile):
+    def choose_transcript_per_gene(self,infile,criteria='max'):
+        '''Criteria one of: min, max, median'''
         transcripts_per_gene={}
         with open(infile, 'r') as infa:
             for line in infa:
@@ -142,10 +123,16 @@ class Gencode_Preprocess():
         good_tid_dict={}
         for transcripts_one_gene in transcripts_per_gene.values():
             sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
-            print(sorted_tuples)
-            min_tuple = sorted_tuples[0]
-            min_tid=min_tuple[0]
-            good_tid_dict[min_tid]=1
+            if (criteria=='max'):
+                good_tuple = sorted_tuples[-1]
+            elif (criteria=='median'):
+                # given 2 transcripts, we'll take the shorter
+                middle = floor((len(sorted_tuples)-1)/2)
+                good_tuple = sorted_tuples[middle]
+            else: # (criteria=='min'):
+                good_tuple = sorted_tuples[0]
+            good_tid=good_tuple[0]
+            good_tid_dict[good_tid]=1
         return good_tid_dict
 
 def args_parse():
@@ -167,7 +154,7 @@ if __name__ == "__main__":
         args_parse()
         fixer = Gencode_Preprocess(args.debug)
         #keepers = fixer.longest_transcript_per_gene(args.infile)
-        keepers = fixer.median_transcript_per_gene(args.infile)
+        keepers = fixer.choose_transcript_per_gene(args.infile,'median')
         fixer.add_filter(All_Caps())
         fixer.add_filter(Filter_N())
         fixer.add_filter(Filter_By_ID(keepers))
