@@ -69,10 +69,9 @@ class FileProcessor:
         self.READONLY="r"
         self.WRITE="w"
         self.features = FeatureVector(wordsize)
-        self.uniform_label = None
-    def set_uniform_label(self,label):
-        '''Assign same label to every instance in this file.'''
-        self.uniform_label = label
+        self.first_number=1
+    def set_first_number(self,basenum):
+        self.first_number=basenum
     def make_features(self):
         '''Make csv file from a oneline fasta file.'''
         with open(self.outfile,self.WRITE,newline='') as csvfile:
@@ -83,8 +82,7 @@ class FileProcessor:
             writer.writerow(header)
             with open(self.infile,self.READONLY) as infile:
                 is_defline=False
-                seqnum=0
-                seqlen=0
+                seqnum=self.first_number-1
                 for line in infile:
                     T=line.rstrip(self.NEWLINE)
                     if T[0]==self.DEFLINE:
@@ -126,7 +124,7 @@ def args_parse():
     parser.add_argument(
         'outPrefix', help='output file prefix (csv)', type=str)
     parser.add_argument(
-        '--label', help='same label for all (int)', type=int)
+        '--base', help='start numbering at (1)', type=int)
     parser.add_argument(
         '--k', help='Size of k-mer (4).',
         type=int, default=4)
@@ -140,8 +138,9 @@ if __name__ == '__main__':
     try:
         args_parse()
         fp=FileProcessor(args.inFile,args.outPrefix,args.k)
-        if (args.label is not None):
-            fp.set_uniform_label(args.label)
+        if (args.base is not None):
+            basenum = int(args.base)
+            fp.set_first_number(basenum)
         fp.make_features()
     except Exception:
         if args.debug:
