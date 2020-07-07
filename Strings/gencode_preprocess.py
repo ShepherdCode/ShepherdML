@@ -58,7 +58,7 @@ class Pretty_Defline(Filter):
             (transcript,gene,length)=Parser.parse_defline(defline)
             slen=int(length)
             sequence.defline="%s %s len%d seq%d"%(transcript,gene,slen,sn)
-            sn += 1
+            self.sequence_counter += 1
         return sequence
 
 class Filter_By_ID(Filter):

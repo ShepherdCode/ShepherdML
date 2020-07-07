@@ -3,6 +3,18 @@ import traceback
 import sys
 import csv
 
+'''
+Input: FASTA
+    Expect defline starts with '>'
+    The rest of the defline is ignored.
+    Expect entire sequence on one line.
+Output: CSV
+    Header line explains the columns.
+    Col 1 = sequence number (starts at 1 by default)
+    Col 2 = sequence length
+    Col 3... count for an individual K-mer, possibly zero.
+'''
+
 class FeatureVector:
     '''Keep count of every k-mer.'''
     ALPHABET_SIZE=4 ## assumed
@@ -66,35 +78,33 @@ class FileProcessor:
         with open(self.outfile,self.WRITE,newline='') as csvfile:
             writer = csv.writer(csvfile, delimiter=',')
             feature_names = self.features.get_names()
-            header=['label','seqname']
+            header=['seqnum','seqlen']
             header += feature_names
             writer.writerow(header)
             with open(self.infile,self.READONLY) as infile:
                 is_defline=False
-                seqname=""
-                label=""
+                seqnum=0
+                seqlen=0
                 for line in infile:
                     T=line.rstrip(self.NEWLINE)
                     if T[0]==self.DEFLINE:
                         if is_defline:
-                            raise Exception('Defline. Is this a oneline fasta? '+str(seqnum))
+                            print(T)
+                            raise Exception('Unexpected defline. Is this a oneline fasta? '+str(seqnum))
                         is_defline = True
-                        fields=T[1:].split(' ')
-                        seqname=fields[0]
-                        if self.uniform_label is None:
-                            label=fields[-1]
-                        else:
-                            label=self.uniform_label
+                        seqnum += 1
                     else:
                         if not is_defline:
-                            raise Exception('Sequence. Is this a oneline fasta? '+str(seqnum))
+                            print(T)
+                            raise Exception('Unexpected sequence. Is this a oneline fasta? '+str(seqnum))
                         is_defline = False
+                        seqlen=len(T)
                         self.extract_kmer_counts(T)
-                        self.process_seq(label,seqname,writer)
+                        self.process_seq(seqnum,seqlen,writer)
 
-    def process_seq(self,label,seqname,writer):
+    def process_seq(self,seqnum,seqlen,writer):
         vec=self.features.get_array()
-        row=[label,seqname]
+        row=[seqnum,seqlen]
         row += vec
         writer.writerow(row)
     def extract_kmer_counts(self,seq,cumulative=False):
