@@ -16,12 +16,23 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import sys
 
+OUTPREFIX="ncRNA.pcRNA"
 ncfile='ncRNA.2mer.features.csv'
-nc_features = pd.read_csv(ncfile,header=0)
-
 pcfile='pcRNA.2mer.features.csv'
+if len(sys.argv)==3:
+    ncfile=sys.argv[1]
+    pcfile=sys.argv[2]
+else:
+    print("Wrong number of command-line arguments.")
+    print("Using default input filenames")
+print("Reading "+ncfile)
+nc_features = pd.read_csv(ncfile,header=0)
+print("Reading "+pcfile)
 pc_features = pd.read_csv(pcfile,header=0)
+print("Will write files like "+OUTPREFIX+".*.pkl")
+print("Working...")
 
 # ## Generate train set, test set
 # Introduce the labels 0=non-coding, 1=protein-coding.
@@ -75,10 +86,10 @@ X_test_ids= test_set[['seqnum','seqlen']].copy()
 y_test=     test_set[['label']].copy()
 X_test=     test_set.drop(columns=['label','seqnum','seqlen'])
 
-X_train.to_pickle("ncRNA.pcRNA.X_train.pkl")
-X_train_ids.to_pickle("ncRNA.pcRNA.X_train_ids.pkl")
-y_train.to_pickle("ncRNA.pcRNA.y_train.pkl")
+X_train.to_pickle(    OUTPREFIX+".X_train.pkl")
+X_train_ids.to_pickle(OUTPREFIX+".X_train_ids.pkl")
+y_train.to_pickle(    OUTPREFIX+".y_train.pkl")
 
-X_test.to_pickle("ncRNA.pcRNA.X_test.pkl")
-X_test_ids.to_pickle("ncRNA.pcRNA.X_test_ids.pkl")
-y_test.to_pickle("ncRNA.pcRNA.y_test.pkl")
+X_test.to_pickle(    OUTPREFIX+".X_test.pkl")
+X_test_ids.to_pickle(OUTPREFIX+".X_test_ids.pkl")
+y_test.to_pickle(    OUTPREFIX+".y_test.pkl")
