@@ -94,6 +94,8 @@ class Gencode_Preprocess():
     def process_fasta(self,infile,outfile):
         lines=[]
         with open(outfile, 'w') as outfa:
+            # Iterate through multi-line FASTA file.
+            # TO DO: use a sequence iterator.
             with open(infile, 'r') as infa:
                 for line in infa:
                     line=line.rstrip()
@@ -120,10 +122,16 @@ class Gencode_Preprocess():
         '''Expect (tid,gid,slen). Return slen.'''
         return tuple[2]
 
+    def getSeq(tuple):
+        '''Expect (tid,seq). Return seq.'''
+        return tuple[1]
+
     def choose_transcript_per_gene(self,infile,criteria='max'):
         '''Criteria one of: min, max, median'''
         transcripts_per_gene={}
         with open(infile, 'r') as infa:
+            # Iterate through multi-line FASTA file.
+            # TO DO: use a sequence iterator.
             for line in infa:
                 if line[0]==DEFLINE_PREFIX:
                     (tid,gid,slen)=Parser.parse_defline(line)
@@ -146,6 +154,34 @@ class Gencode_Preprocess():
             good_tid_dict[good_tid]=1
         return good_tid_dict
 
+    def remove_duplicates(self,good_tid,infile):
+        '''Avoid retaining duplicate sequences.'''
+        tuples=[]
+        with open(infile, 'r') as infa:
+            (tid,gid,slen) = ('','','')
+            seq=''
+            # Iterate through multi-line FASTA file.
+            # TO DO: use a sequence iterator.
+            for line in infa:
+                if line[0]==DEFLINE_PREFIX:
+                    if len(seq)>0:
+                        tuple=(tid,seq)
+                        tuples.append(tuple)
+                    (tid,gid,slen)=Parser.parse_defline(line)
+                    seq=''
+                elif tid in good_tid:
+                    seq=seq+line.rstrip()
+            if len(seq)>0:
+                tuple=(tid,seq)
+                tuples.append(tuple)
+        sorted_tuples=sorted(tuples,key=Gencode_Preprocess.getSeq)
+        for i in range(1,len(sorted_tuples)):
+            this_tid=sorted_tuples[i][0]
+            prev_seq=sorted_tuples[i-1][1]
+            this_seq=sorted_tuples[i][1]
+            if prev_seq==this_seq:
+                del good_tid[this_tid]
+
 def args_parse():
     global args
     parser = argparse.ArgumentParser(
@@ -163,15 +199,17 @@ if __name__ == "__main__":
     '''Preprocess FASTA from GenCode or Ensembl.'''
     try:
         args_parse()
+        infile=args.infile
+        outfile=args.outfile
         fixer = Gencode_Preprocess(args.debug)
-        #keepers = fixer.longest_transcript_per_gene(args.infile)
-        keepers = fixer.choose_transcript_per_gene(args.infile,'median')
+        keepers = fixer.choose_transcript_per_gene(infile,'median')
+        fixer.remove_duplicates(keepers,infile)
         fixer.add_filter(All_Caps())
         fixer.add_filter(Filter_N())
         fixer.add_filter(Filter_By_ID(keepers))
         fixer.add_filter(Size_Limit(200,30000))
         fixer.add_filter(Pretty_Defline()) # must be last
-        fixer.process_fasta(args.infile,args.outfile)
+        fixer.process_fasta(infile,outfile)
     except Exception:
         print()
         if args.debug:
