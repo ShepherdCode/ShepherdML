@@ -39,12 +39,23 @@ class Filter():
 class Filter_N(Filter):
     def processing_callback(self,sequence):
         if 'N' in sequence.seqline:
-            return Sequence()
+            return Sequence() #empty
         return sequence
 
 class All_Caps(Filter):
     def processing_callback(self,sequence):
         sequence.seqline=sequence.seqline.upper()
+        return sequence
+
+class Size_Limit(Filter):
+    def __init__(self,min,max):
+        self.min=min
+        self.max=max
+        Filter.__init__(self)
+    def processing_callback(self,sequence):
+        slen = len(sequence.seqline)
+        if (slen<self.min or slen>self.max):
+            return Sequence() # empty
         return sequence
 
 class Pretty_Defline(Filter):
@@ -158,6 +169,7 @@ if __name__ == "__main__":
         fixer.add_filter(All_Caps())
         fixer.add_filter(Filter_N())
         fixer.add_filter(Filter_By_ID(keepers))
+        fixer.add_filter(Size_Limit(200,30000))
         fixer.add_filter(Pretty_Defline()) # must be last
         fixer.process_fasta(args.infile,args.outfile)
     except Exception:
