@@ -29,7 +29,7 @@ from sklearn.linear_model import LogisticRegression
 split=20000
 
 from sklearn.svm import SVC
-svc = SVC()
+svc = SVC(gamma='auto')
 svc.fit( X_train[:split], np.ravel(y_train[:split]) )
 y_pred=svc.predict(X_train[split:])
 svc_score=svc.score(X_train[split:],y_train[split:]) # train on 2/3, test on 1/3
