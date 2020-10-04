@@ -87,6 +87,7 @@ class Reducer ():
 
     def transcripts_out(self,infile,name,set):
         FN=name+'.'+self.infile
+        print("Writing file "+FN)
         with open(FN, 'w') as outfa:
             with open(self.infile, 'r') as infa:
                 good_seq=False
