@@ -7,23 +7,29 @@ import random
 class Reducer ():
     def __init__(self,debug=False):
         self.DEFLINE_PREFIX='>'
+        self.TOKEN_SEPARATOR='|'
         self.debug=debug
         self.test_size = 500
         self.challenge_size = 500
         self.valid_size = 500
         self.train_size = 16000
+        self.train_size = 500  # for testing
         self.all_genes={}
         self.transcript_to_gene={}
         self.set_aside={}
-        self.train_set_transcripts={}
+        self.test_set={}
+        self.challenge_set={}
+        self.valid_set={}
+        self.train_set={}
+        self.infile=None
 
     def data_in(self,infile):
-        TOKEN_SEPARATOR='|'
+        self.infile=infile
         with open(infile, 'r') as infa:
             num_seqs = 0
             for line in infa:
                 if line[0]==self.DEFLINE_PREFIX:
-                    words=line.split(TOKEN_SEPARATOR)
+                    words=line[1:].split(self.TOKEN_SEPARATOR)
                     transcript_id=words[0]
                     gene_id=words[1]
                     self.all_genes[gene_id]=1
@@ -34,20 +40,24 @@ class Reducer ():
         for i in range(self.test_size):
             gene_id=self.get_random_not_taken()
             test_set.append(gene_id)
-        print("Size of test set is %d"%len(test_set))
+        self.test_set=test_set
+        print("Size of test set is %d"%len(self.test_set))
         challenge_set=[]
         for i in range(self.challenge_size):
             gene_id=self.get_random_not_taken()
             challenge_set.append(gene_id)
-        print("Size of challenge set is %d"%len(challenge_set))
+        self.challenge_set=challenge_set
+        print("Size of challenge set is %d"%len(self.challenge_set))
         valid_set=[]
         for i in range(self.valid_size):
             gene_id=self.get_random_not_taken()
             valid_set.append(gene_id)
-        print("Size of valid set is %d"%len(valid_set))
+        self.valid_set=valid_set
+        print("Size of valid set is %d"%len(self.valid_set))
 
     def make_train(self):
         train_set=[]
+        print("Selecting train set...")
         while (len(train_set)<self.train_size):
             tr_list=list(self.transcript_to_gene.keys())
             limit=len(tr_list)
@@ -57,7 +67,8 @@ class Reducer ():
             self.transcript_to_gene.pop(transcript_id)
             if gene_id not in self.set_aside:
                 train_set.append(transcript_id)
-        self.train_set_transcripts=train_set
+        self.train_set=train_set
+        print("Size of train set is %d"%len(self.train_set))
 
     def get_random_not_taken(self):
         list_genes=list(self.all_genes.keys())
@@ -70,21 +81,25 @@ class Reducer ():
                 return gene_id
 
     def data_out(self,infile):
-        #with open(self.outfile, 'w') as outfa:
-        pass
+        self.genes_out(infile,'test',self.test_set)
 
-    def print_prev(self,outfile,defline,seq):
-        NL='\n'
-        allcaps=seq.upper()
-        if self.delete_N and 'N' in allcaps:
-            pass
-        else:
-            outfile.write(defline+NL)
-            if self.allcaps:
-                outfile.write(allcaps)
-            else:
-                outfile.write(seq)
-            outfile.write(NL)
+    def genes_out(self,infile,name,set):
+        FN=name+'.'+self.infile
+        with open(FN, 'w') as outfa:
+            with open(self.infile, 'r') as infa:
+                good_seq=False
+                for line in infa:
+                    if line[0]==self.DEFLINE_PREFIX:
+                        words=line[1:].split(self.TOKEN_SEPARATOR)
+                        transcript_id=words[0]
+                        gene_id=words[1]
+                        if gene_id in set:
+                            set.remove(gene_id)
+                            good_seq=True
+                        else:
+                            good_seq=False
+                    if good_seq:
+                        outfa.write(line)
 
 def args_parse():
     global args
