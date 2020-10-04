@@ -106,6 +106,7 @@ class Reducer ():
         # Output first transcript for each gene in set.
         # TO DO: output a random transcript for each gene in set.
         FN=name+'.'+self.infile
+        print("Writing file "+FN)
         with open(FN, 'w') as outfa:
             with open(self.infile, 'r') as infa:
                 good_seq=False
