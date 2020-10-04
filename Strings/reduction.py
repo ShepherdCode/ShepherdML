@@ -13,14 +13,13 @@ class Reducer ():
         self.challenge_size = 500
         self.valid_size = 500
         self.train_size = 16000
-        self.train_size = 500  # for testing
-        self.all_genes={}
-        self.transcript_to_gene={}
-        self.set_aside={}
-        self.test_set={}
-        self.challenge_set={}
-        self.valid_set={}
-        self.train_set={}
+        self.all_genes={} # every gene in input stream
+        self.transcript_to_gene={} # map every transcript to gene
+        self.set_aside={} # genes removed as train candidates
+        self.test_set={} # genes set aside for testing
+        self.challenge_set={} # genes set aside for challenge
+        self.valid_set={} # genes set aside for validation
+        self.train_set={} # transcripts selected for training
         self.infile=None
 
     def data_in(self,infile):
@@ -82,8 +81,29 @@ class Reducer ():
 
     def data_out(self,infile):
         self.genes_out(infile,'test',self.test_set)
+        self.genes_out(infile,'challenge',self.challenge_set)
+        self.genes_out(infile,'valid',self.valid_set)
+        self.transcripts_out(infile,'train',self.train_set)
+
+    def transcripts_out(self,infile,name,set):
+        FN=name+'.'+self.infile
+        with open(FN, 'w') as outfa:
+            with open(self.infile, 'r') as infa:
+                good_seq=False
+                for line in infa:
+                    if line[0]==self.DEFLINE_PREFIX:
+                        words=line[1:].split(self.TOKEN_SEPARATOR)
+                        transcript_id=words[0]
+                        if transcript_id in set:
+                            good_seq=True
+                        else:
+                            good_seq=False
+                    if good_seq:
+                        outfa.write(line)
 
     def genes_out(self,infile,name,set):
+        # Output first transcript for each gene in set.
+        # TO DO: output a random transcript for each gene in set.
         FN=name+'.'+self.infile
         with open(FN, 'w') as outfa:
             with open(self.infile, 'r') as infa:
