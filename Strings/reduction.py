@@ -15,7 +15,7 @@ class Reducer ():
         self.all_genes={}
         self.transcript_to_gene={}
         self.set_aside={}
-        self.train_set_genes={}
+        self.train_set_transcripts={}
 
     def data_in(self,infile):
         TOKEN_SEPARATOR='|'
@@ -45,12 +45,19 @@ class Reducer ():
             gene_id=self.get_random_not_taken()
             valid_set.append(gene_id)
         print("Size of valid set is %d"%len(valid_set))
+
+    def make_train(self):
         train_set=[]
-        for i in range(self.train_size):
-            gene_id=self.get_random_not_taken()
-            train_set.append(gene_id)
-        print("Size of train set is %d"%len(train_set))
-        self.train_set_genes = train_set
+        while (len(train_set)<self.train_size):
+            tr_list=list(self.transcript_to_gene.keys())
+            limit=len(tr_list)
+            rnd=random.randrange(0,limit)
+            transcript_id=tr_list[rnd]
+            gene_id=self.transcript_to_gene[transcript_id]
+            self.transcript_to_gene.pop(transcript_id)
+            if gene_id not in self.set_aside:
+                train_set.append(transcript_id)
+        self.train_set_transcripts=train_set
 
     def get_random_not_taken(self):
         list_genes=list(self.all_genes.keys())
@@ -97,6 +104,7 @@ if __name__ == "__main__":
         fixer = Reducer(args.debug)
         fixer.data_in(args.infile)
         fixer.reduce()
+        fixer.make_train()
         fixer.data_out(args.infile)
     except Exception:
         print()
