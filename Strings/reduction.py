@@ -13,8 +13,11 @@ class Reducer ():
         self.challenge_size = 500
         self.valid_size = 500
         self.train_size = 16000
+        self.min_len=200
+        self.max_len=1000
         self.all_genes={} # every gene in input stream
         self.transcript_to_gene={} # map every transcript to gene
+        self.transcript_to_len={} # record every transcript length
         self.set_aside={} # genes removed as train candidates
         self.test_set={} # genes set aside for testing
         self.challenge_set={} # genes set aside for challenge
@@ -26,6 +29,7 @@ class Reducer ():
         self.infile=infile
         with open(infile, 'r') as infa:
             num_seqs = 0
+            transcript_id=None
             for line in infa:
                 if line[0]==self.DEFLINE_PREFIX:
                     words=line[1:].split(self.TOKEN_SEPARATOR)
@@ -33,6 +37,9 @@ class Reducer ():
                     gene_id=words[1]
                     self.all_genes[gene_id]=1
                     self.transcript_to_gene[transcript_id]=gene_id
+                else:
+                    tlen=len(line.rstrip())
+                    self.transcript_to_len[transcript_id]=tlen
 
     def reduce(self):
         test_set=[]
@@ -65,7 +72,9 @@ class Reducer ():
             gene_id=self.transcript_to_gene[transcript_id]
             self.transcript_to_gene.pop(transcript_id)
             if gene_id not in self.set_aside:
-                train_set.append(transcript_id)
+                tlen=self.transcript_to_len[transcript_id]
+                if tlen>=self.min_len and tlen<=self.max_len:
+                    train_set.append(transcript_id)
         self.train_set=train_set
         print("Size of train set is %d"%len(self.train_set))
 
