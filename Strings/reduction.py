@@ -45,19 +45,38 @@ class Reducer ():
         test_set=[]
         for i in range(self.test_size):
             gene_id=self.get_random_not_taken()
+            self.set_aside[gene_id] = 1
             test_set.append(gene_id)
         self.test_set=test_set
         print("Size of test set is %d"%len(self.test_set))
         challenge_set=[]
         for i in range(self.challenge_size):
             gene_id=self.get_random_not_taken()
+            self.set_aside[gene_id] = 1
             challenge_set.append(gene_id)
         self.challenge_set=challenge_set
         print("Size of challenge set is %d"%len(self.challenge_set))
+        #valid_set=[]
+        #for i in range(self.valid_size):
+        #    gene_id=self.get_random_not_taken()
+        #    valid_set.append(gene_id)
+        #self.valid_set=valid_set
+        #print("Size of valid set is %d"%len(self.valid_set))
+
+    def make_valid(self):
         valid_set=[]
-        for i in range(self.valid_size):
-            gene_id=self.get_random_not_taken()
-            valid_set.append(gene_id)
+        print("Selecting valid set...")
+        while (len(valid_set)<self.valid_size):
+            tr_list=list(self.transcript_to_gene.keys())
+            limit=len(tr_list)
+            rnd=random.randrange(0,limit)
+            transcript_id=tr_list[rnd]
+            gene_id=self.transcript_to_gene[transcript_id]
+            if gene_id not in self.set_aside:
+                tlen=self.transcript_to_len[transcript_id]
+                if tlen>=self.min_len and tlen<=self.max_len:
+                    valid_set.append(transcript_id)
+                    self.set_aside[gene_id] = 1
         self.valid_set=valid_set
         print("Size of valid set is %d"%len(self.valid_set))
 
@@ -85,13 +104,12 @@ class Reducer ():
             rnd=random.randrange(0,num_genes)
             gene_id=list_genes[rnd]
             if gene_id not in self.set_aside:
-                self.set_aside[gene_id] = 1
                 return gene_id
 
     def data_out(self,infile):
         self.genes_out(infile,'test',self.test_set)
         self.genes_out(infile,'challenge',self.challenge_set)
-        self.genes_out(infile,'valid',self.valid_set)
+        self.transcripts_out(infile,'valid',self.valid_set)
         self.transcripts_out(infile,'train',self.train_set)
 
     def transcripts_out(self,infile,name,set):
@@ -125,7 +143,7 @@ class Reducer ():
                         transcript_id=words[0]
                         gene_id=words[1]
                         if gene_id in set:
-                            set.remove(gene_id)
+                            set.remove(gene_id)  # is this correct?
                             good_seq=True
                         else:
                             good_seq=False
@@ -150,6 +168,7 @@ if __name__ == "__main__":
         fixer = Reducer(args.debug)
         fixer.data_in(args.infile)
         fixer.reduce()
+        fixer.make_valid()
         fixer.make_train()
         fixer.data_out(args.infile)
     except Exception:
