@@ -29,64 +29,9 @@ class Parser():
             raise Exception
         return (transcript,gene,length)
 
-class Filter():
-    def processing_callback(self,sequence):
-        return sequence # override this
-    def process_one_sequence(self,sequence):
-        sequence=self.processing_callback(sequence)
-        return sequence
-
-class Filter_N(Filter):
-    def processing_callback(self,sequence):
-        if 'N' in sequence.seqline:
-            return Sequence() #empty
-        return sequence
-
-class All_Caps(Filter):
-    def processing_callback(self,sequence):
-        sequence.seqline=sequence.seqline.upper()
-        return sequence
-
-class Size_Limit(Filter):
-    def __init__(self,min,max):
-        self.min=min
-        self.max=max
-        Filter.__init__(self)
-    def processing_callback(self,sequence):
-        slen = len(sequence.seqline)
-        if (slen<self.min or slen>self.max):
-            return Sequence() # empty
-        return sequence
-
-class Pretty_Defline(Filter):
-    def __init__(self):
-        self.sequence_counter=0
-        Filter.__init__(self)
-    def processing_callback(self,sequence):
-        defline=sequence.defline
-        sn=self.sequence_counter
-        if len(defline)>0:
-            (transcript,gene,length)=Parser.parse_defline(defline)
-            slen=int(length)
-            sequence.defline="%s %s len%d seq%d"%(transcript,gene,slen,sn)
-            self.sequence_counter += 1
-        return sequence
-
-class Filter_By_ID(Filter):
-    def __init__(self,keepers):
-        self.keepers=keepers
-        Filter.__init__(self)
-    def processing_callback(self,sequence):
-        if len(sequence.defline)>0:
-            (tid,gid,slen)=Parser.parse_defline(sequence.defline)
-            if tid in self.keepers:
-                return sequence
-        return Sequence()
-
 class Gencode_Preprocess():
     def __init__(self,debug=False):
         self.debug=debug
-        self.filters=[Filter()]
 
     def add_filter(self,filter):
         self.filters.append(filter)
