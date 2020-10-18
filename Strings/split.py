@@ -4,10 +4,11 @@ import os
 import sys
 from datetime import datetime
 from math import floor
+import random
 
 DEFLINE_PREFIX='>'
 NEWLINE='\n'
-FIELD_SEPARATOR='|'
+FIELD_SEPARATOR=' '
 
 class Parser():
     def parse_defline(defline):
@@ -15,28 +16,30 @@ class Parser():
             fields=defline.split(FIELD_SEPARATOR)
             transcript=fields[0]
             gene=fields[1]
-            length=int(fields[6])
+            length=int(fields[2])
         except Exception as e:
             print('Cannot parse defline '+defline)
             print(e)
             raise Exception
         return (transcript,gene,length)
 
-class Gencode_Preprocess():
-    def __init__(self,debug=False):
+class Gencode_Splitter():
+    def __init__(self,debug,infile):
         self.debug=debug
-        self.min_len=0  # same as no minimum
+        self.infile=infile
+        self.id_to_len={}
+        self.outfile=None
 
-    def set_min_len(self,minimum):
-        self.min_len=minimum  # e.g. 200
+    def set_output_file(self,outfile):
+        self.outfile=outfile
 
-    def process_fasta(self,infile,outfile,good_tid,verbose=True):
+    def process_fasta(self,good_tid,verbose=True):
         '''Assume FASTA with one line per sequence.'''
         defline=None
         seqline=None
         sn=0  # output sequence number
-        with open(outfile, 'w') as outfa:
-            with open(infile, 'r') as infa:
+        with open(self.outfile, 'w') as outfa:
+            with open(self.infile, 'r') as infa:
                 for line in infa:
                     if line[0]==DEFLINE_PREFIX:
                         defline = line
@@ -46,65 +49,72 @@ class Gencode_Preprocess():
                         if tid in good_tid:
                             slen=int(slen)
                             # The defline '>' is part of the tid
-                            defline="%s %s %d %d\n"%(tid,gid,slen,sn)
+                            defline="%s %s len=%d seq=%d\n"%(tid,gid,slen,sn)
                             outfa.write(defline)
                             outfa.write(seqline)
                             sn += 1
         if verbose:
+            print("Output_filename: ",self.outfile)
             print("Output_sequences: ",sn)
 
-    def getLen(tuple):
-        '''Expect (tid,gid,slen). Return slen.'''
-        return tuple[2]
+    def remove_ids(self,bad_ids,verbose=True):
+        plen=len(self.id_to_len.keys())
+        dlen=len(bad_ids.keys())
+        for id in bad_ids:
+            del self.id_to_len[id]
+        nlen=len(self.id_to_len.keys())
+        if verbose:
+            print("Num_ids_before_delete: ",plen)
+            print("Num_ids_to_delete: ",dlen)
+            print("Num_ids_after_delete: ",nlen)
 
-    def getSeq(tuple):
-        '''Expect (tid,seq). Return seq.'''
-        return tuple[1]
-
-    def choose_transcript_per_gene(self,infile,criteria='max',verbose=True):
-        '''Criteria can be one of: min, max, median.
-        Rely on length provided in GenCode defline.'''
-        transcripts_per_gene={}
+    def load_ids(self,verbose=True):
+        self.id_to_len={}
         num_deflines = 0
         num_genes = 0
         num_transcripts = 0
         num_too_short = 0
-        with open(infile, 'r') as infa:
+        with open(self.infile, 'r') as infa:
             for line in infa:
                 if line[0]==DEFLINE_PREFIX:
                     num_deflines += 1
                     (tid,gid,slen)=Parser.parse_defline(line)
-                    if slen<self.min_len:
-                        num_too_short += 1
-                    else:
-                        if not gid in transcripts_per_gene:
-                            transcripts_per_gene[gid]=[]
-                            num_genes += 1
-                        tuple=(tid,gid,slen)
-                        transcripts_per_gene[gid].append(tuple)
-                        num_transcripts += 1
-        good_tid_dict={}
-        for transcripts_one_gene in transcripts_per_gene.values():
-            sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
-            if (criteria=='max'):
-                good_tuple = sorted_tuples[-1]
-            elif (criteria=='median'):
-                # given 2 median transcripts, we'll take the shorter
-                middle = floor((len(sorted_tuples)-1)/2)
-                good_tuple = sorted_tuples[middle]
-            else: # (criteria=='min'):
-                good_tuple = sorted_tuples[0]
-            good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
-            good_tid_dict[good_tid]=1 # 1=exists
-        num_good = len(good_tid_dict.keys())
+                    self.id_to_len[tid]=slen
+                    num_transcripts += 1
         if verbose:
-            print("Infile: ",infile)
+            print("Infile: ",self.infile)
             print("Input_Deflines: ",num_deflines)
-            print("Input_Genes: ",num_genes)
-            print("Input_Transcripts: ",num_transcripts)
-            print("Transcripts_Too_Short: ",num_too_short)
-            print("Retained_Transcripts: ",num_good)
-        return good_tid_dict
+            print("Retained_Transcripts: ",num_transcripts)
+
+    def make_test_set(self,tsize,verbose=True):
+        REPEATABLE = 45
+        shuffled=list(self.id_to_len.keys())
+        random.seed(REPEATABLE)
+        random.shuffle(shuffled)
+        test_list = shuffled[:tsize]
+        test_set={}
+        for id in test_list:
+            test_set[id]=1 # signal existence
+        if verbose:
+            print("Test set size: ",len(test_set))
+        return test_set
+
+    def make_train_set(self,maxlen,tsize,verbose=True):
+        REPEATABLE = 55
+        shuffled=list(self.id_to_len.keys())
+        random.seed(REPEATABLE)
+        random.shuffle(shuffled)
+        train_list = shuffled[:tsize]
+        train_set={}
+        selected=0
+        for id in train_list:
+            if selected < tsize:
+                if self.id_to_len[id] <= maxlen:
+                    selected += 1
+                    train_set[id]=1 # signal existence
+        if verbose:
+            print("Train set size: ",len(train_set))
+        return train_set
 
     def remove_duplicates(self,good_tid,infile,verbose=True):
         '''GenCode includes ~60 identical sequences from different genes.
@@ -142,11 +152,11 @@ class Gencode_Preprocess():
 def args_parse():
     global args
     parser = argparse.ArgumentParser(
-        description='Preprocess GenCode FASTA file.')
+        description='Split FASTA into test and train sets.')
     parser.add_argument(
         'infile', help='input filename (fasta)', type=str)
     parser.add_argument(
-        'outfile', help='output filename (fasta)', type=str)
+        'outfile', help='output tag (fasta)', type=str)
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
@@ -155,13 +165,17 @@ def args_parse():
 if __name__ == "__main__":
     try:
         args_parse()
-        infile=args.infile
-        outfile=args.outfile
-        fixer = Gencode_Preprocess(args.debug)
-        fixer.set_min_len(200)
-        keep_transcripts = fixer.choose_transcript_per_gene(infile,'median')
-        keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
-        fixer.process_fasta(infile,outfile,keep_transcripts)
+        splitter = Gencode_Splitter(args.debug,args.infile)
+        splitter.load_ids()
+        test_ids = splitter.make_test_set(1000)
+        testfile = 'test.'+args.outfile
+        splitter.set_output_file(testfile)
+        splitter.process_fasta(test_ids)
+        trainfile = 'train.'+args.outfile
+        splitter.remove_ids(test_ids)
+        train_ids=splitter.make_train_set(1000,16000)
+        splitter.set_output_file(trainfile)
+        splitter.process_fasta(train_ids)
     except Exception:
         print()
         if args.debug:
