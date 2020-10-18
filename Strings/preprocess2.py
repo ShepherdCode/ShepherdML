@@ -32,9 +32,10 @@ class Parser():
 class Gencode_Preprocess():
     def __init__(self,debug=False):
         self.debug=debug
+        self.min_len=0  # same as no minimum
 
-    def add_filter(self,filter):
-        self.filters.append(filter)
+    def set_min_len(self,minimum):
+        self.min_len=minimum  # e.g. 200
 
     def process_fasta(self,infile,outfile,good_tid,verbose=True):
         '''Assume FASTA with one line per sequence.'''
@@ -73,17 +74,21 @@ class Gencode_Preprocess():
         num_deflines = 0
         num_genes = 0
         num_transcripts = 0
+        num_too_short = 0
         with open(infile, 'r') as infa:
             for line in infa:
                 if line[0]==DEFLINE_PREFIX:
                     num_deflines += 1
                     (tid,gid,slen)=Parser.parse_defline(line)
-                    if not gid in transcripts_per_gene:
-                        transcripts_per_gene[gid]=[]
-                        num_genes += 1
-                    tuple=(tid,gid,slen)
-                    transcripts_per_gene[gid].append(tuple)
-                    num_transcripts += 1
+                    if slen<self.min_len:
+                        num_too_short += 1
+                    else:
+                        if not gid in transcripts_per_gene:
+                            transcripts_per_gene[gid]=[]
+                            num_genes += 1
+                        tuple=(tid,gid,slen)
+                        transcripts_per_gene[gid].append(tuple)
+                        num_transcripts += 1
         good_tid_dict={}
         for transcripts_one_gene in transcripts_per_gene.values():
             sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
@@ -103,6 +108,7 @@ class Gencode_Preprocess():
             print("Input_Deflines: ",num_deflines)
             print("Input_Genes: ",num_genes)
             print("Input_Transcripts: ",num_transcripts)
+            print("Transcripts_Too_Short: ",num_too_short)
             print("Retained_Transcripts: ",num_good)
         return good_tid_dict
 
@@ -159,13 +165,9 @@ if __name__ == "__main__":
         infile=args.infile
         outfile=args.outfile
         fixer = Gencode_Preprocess(args.debug)
+        fixer.set_min_len(200)
         keep_transcripts = fixer.choose_transcript_per_gene(infile,'median')
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
-        #fixer.add_filter(All_Caps())
-        #fixer.add_filter(Filter_N())
-        #fixer.add_filter(Filter_By_ID(keep_transcripts))
-        #fixer.add_filter(Size_Limit(200,30000))
-        #fixer.add_filter(Pretty_Defline()) # must be last
         fixer.process_fasta(infile,outfile,keep_transcripts)
     except Exception:
         print()
