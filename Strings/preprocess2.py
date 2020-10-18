@@ -11,11 +11,6 @@ DEFLINE_PREFIX='>'
 NEWLINE='\n'
 FIELD_SEPARATOR='|'
 
-class Sequence():
-    def __init__(self):
-        self.defline=''
-        self.seqline=''
-
 class Parser():
     def parse_defline(defline):
         try:
@@ -52,7 +47,8 @@ class Gencode_Preprocess():
                         (tid,gid,slen)=Parser.parse_defline(defline)
                         if tid in good_tid:
                             slen=int(slen)
-                            defline=">%s %s len%d seq%d"%(tid,gid,slen,sn)
+                            # The defline '>' is part of the tid
+                            defline="%s %s len=%d seq=%d\n"%(tid,gid,slen,sn)
                             outfa.write(defline)
                             outfa.write(seqline)
                             sn += 1
