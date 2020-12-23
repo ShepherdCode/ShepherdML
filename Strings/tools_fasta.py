@@ -5,7 +5,11 @@ import tools_fasta as tools
 tools.yahoo()
 '''
 
+# TO DO: write tests / demos
+# TO DO: remove pandas dependency just to open FASTA?
+
 import pandas as pd
+import numpy as np
 
 def yahoo():
     '''Run this to verify the code import.'''
@@ -63,9 +67,30 @@ def separate_X_and_y(data):
     X=   data.drop(columns=['class','seqnum','seqlen'])
     return (X,y)
 
-def make_kmers(MAXLEN,train_set):
+def strings_to_vectors(data,uniform_len,K):
+    all_seqs=[]
+    KMER_TABLE=make_kmer_table(K)
+    for seq in data['sequence']:
+        i=0
+        seqlen=len(seq)
+        kmers=[]
+        while i < seqlen-K+1 -1:
+            kmer=seq[i:i+K]
+            i += 1
+            value=KMER_TABLE[kmer]
+            kmers.append(value)
+        pad_val=0
+        while i < uniform_len:
+            kmers.append(pad_val)
+            i += 1
+        all_seqs.append(kmers)
+    pd2d=pd.DataFrame(all_seqs)
+    return pd2d   # return 2D dataframe, uniform dimensions
+
+def make_kmers(K,MAXLEN,train_set):
+    # TO DO: move data separation out of this function
     (X_train_all,y_train_all)=separate_X_and_y(train_set)
-    X_train_kmers=strings_to_vectors(X_train_all,MAXLEN)
+    X_train_kmers=strings_to_vectors(X_train_all,MAXLEN,K)
     # From pandas dataframe to numpy to list to numpy
     num_seqs=len(X_train_kmers)
     tmp_seqs=[]
