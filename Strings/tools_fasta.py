@@ -7,6 +7,7 @@ tools.yahoo()
 
 # TO DO: write tests / demos
 # TO DO: remove pandas dependency just to open FASTA?
+# TO DO: stop using K=1 and NNN=0
 
 import pandas as pd
 import numpy as np
@@ -101,3 +102,18 @@ def make_kmers(K,MAXLEN,train_set):
     tmp_seqs=None
     labels=y_train_all.to_numpy()
     return (X_train_kmers,labels)
+
+def make_frequencies(K,Xin):
+    Xout=[]
+    VOCABULARY_SIZE= 4**K + 1  # plus one for 'NNN'
+    for seq in Xin:
+        freqs =[0] * VOCABULARY_SIZE
+        total = 0
+        for kmerval in seq:
+            freqs[kmerval] += 1
+            total += 1
+        for c in range(VOCABULARY_SIZE):
+            freqs[c] = freqs[c]/total
+        Xout.append(freqs)
+    Xnum = np.asarray(Xout)
+    return (Xnum)
