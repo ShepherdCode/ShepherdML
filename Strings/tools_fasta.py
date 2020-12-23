@@ -58,6 +58,11 @@ def make_kmer_table(K):
         value += 1
     return kmer_dict
 
+def separate_X_and_y(data):
+    y=   data[['class']].copy()
+    X=   data.drop(columns=['class','seqnum','seqlen'])
+    return (X,y)
+
 def make_kmers(MAXLEN,train_set):
     (X_train_all,y_train_all)=separate_X_and_y(train_set)
     X_train_kmers=strings_to_vectors(X_train_all,MAXLEN)
