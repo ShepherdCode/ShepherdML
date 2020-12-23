@@ -57,3 +57,17 @@ def make_kmer_table(K):
         kmer_dict[mer]=value
         value += 1
     return kmer_dict
+
+def make_kmers(MAXLEN,train_set):
+    (X_train_all,y_train_all)=separate_X_and_y(train_set)
+    X_train_kmers=strings_to_vectors(X_train_all,MAXLEN)
+    # From pandas dataframe to numpy to list to numpy
+    num_seqs=len(X_train_kmers)
+    tmp_seqs=[]
+    for i in range(num_seqs):
+        kmer_sequence=X_train_kmers.iloc[i]
+        tmp_seqs.append(kmer_sequence)
+    X_train_kmers=np.array(tmp_seqs)
+    tmp_seqs=None
+    labels=y_train_all.to_numpy()
+    return (X_train_kmers,labels)
