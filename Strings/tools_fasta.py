@@ -141,11 +141,10 @@ def onehot(seqs):
         newX.append(letters)
     return np.asarray(newX)
 
-def uniform_length(lst,UNI_LEN):
-    # For speed, assume no element longer than UNI_LEN.
-    # This function breaks if assumption is violated.
-    return np.array([i + [0]*(UNI_LEN-len(i)) for i in lst])
-
 ONEHOT5=dict(zip('ACGTN',[[1,0,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,0,1,0],[0,0,0,0,1]]))
 def one_hot (str):
     return [ONEHOT5[x] for x in str]
+def uniform_length(lst,UNI_LEN):
+    # For speed, assume no element longer than UNI_LEN.
+    # This function breaks if assumption is violated.
+    return np.array([i + 'N'*(UNI_LEN-len(i)) for i in lst])
