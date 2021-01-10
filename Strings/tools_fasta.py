@@ -1,6 +1,6 @@
 '''
-Eventually, make this a proper python module.
-For now, just do this:
+TO DO: make this a proper python module.
+HOW TO USE:
 import tools_fasta as tools
 tools.yahoo()
 '''
@@ -117,3 +117,8 @@ def make_frequencies(K,Xin):
         Xout.append(freqs)
     Xnum = np.asarray(Xout)
     return (Xnum)
+
+def make_slice(data_set,min_len,max_len):
+    '''data_set: pandas data frame with seqlen column'''
+    slice = data_set.query('seqlen <= '+str(max_len)+' & seqlen>= '+str(min_len))
+    return slice
