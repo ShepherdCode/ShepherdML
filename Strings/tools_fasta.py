@@ -122,3 +122,21 @@ def make_slice(data_set,min_len,max_len):
     '''data_set: pandas data frame with seqlen column'''
     slice = data_set.query('seqlen <= '+str(max_len)+' & seqlen>= '+str(min_len))
     return slice
+
+def onehot(seqs):
+    '''Input list of digits from alphabet {0..4}.
+    Return array of (5-bit bit-vectors).'''
+    newX = []
+    vectors=[]
+    vectors.append([1,0,0,0,0]) # 0 = N
+    vectors.append([0,1,0,0,0]) # 1 = A
+    vectors.append([0,0,1,0,0]) # 2 = C
+    vectors.append([0,0,0,1,0]) # 3 = G
+    vectors.append([0,0,0,0,1]) # 4 = T
+    for seq in X_train:
+        letters=[]
+        for num in seq:
+            hot = vectors[num]
+            letters.append(hot)
+        newX.append(letters)
+    return np.asarray(newX)
