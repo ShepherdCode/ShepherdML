@@ -133,7 +133,7 @@ def onehot(seqs):
     vectors.append([0,0,1,0,0]) # 2 = C
     vectors.append([0,0,0,1,0]) # 3 = G
     vectors.append([0,0,0,0,1]) # 4 = T
-    for seq in X_train:
+    for seq in seqs:
         letters=[]
         for num in seq:
             hot = vectors[num]
