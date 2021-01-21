@@ -75,9 +75,9 @@ class Gencode_Preprocess():
                     transcripts_per_gene[gid].append(tuple)
         return transcripts_per_gene
 
-    def one_transcript_per_gene(self,metadata,criteria='max',verbose=True):
-        '''Criteria can be one of: min, max, median.
-        Choose which transcripts IDs to keep.
+    def subset_transcripts(self,metadata,criteria,verbose=True):
+        '''Choose which transcripts IDs to keep.
+        Criteria must be one of short|long|median|all.
         Rely on length provided in GenCode defline.'''
         good_tid_dict={}
         num_genes = 0
@@ -85,17 +85,24 @@ class Gencode_Preprocess():
         for transcripts_one_gene in metadata.values():
             num_genes += 1
             num_transcripts += len(transcripts_one_gene)
-            sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
-            if (criteria=='max'):
-                good_tuple = sorted_tuples[-1]
-            elif (criteria=='median'):
-                # given 2 median transcripts, we'll take the shorter
-                middle = floor((len(sorted_tuples)-1)/2)
-                good_tuple = sorted_tuples[middle]
-            else: # (criteria=='min'):
-                good_tuple = sorted_tuples[0]
-            good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
-            good_tid_dict[good_tid]=1 # 1=exists
+            if criteria=='all':
+                for good_tuple in transcripts_one_gene:
+                    good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                    good_tid_dict[good_tid]=1 # 1=exists
+            else:
+                sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
+                if criteria=='long':
+                    good_tuple = sorted_tuples[-1]
+                elif criteria=='median':
+                    # given 2 median transcripts, we'll take the shorter
+                    middle = floor((len(sorted_tuples)-1)/2)
+                    good_tuple = sorted_tuples[middle]
+                elif criteria=='short':
+                    good_tuple = sorted_tuples[0]
+                else:
+                    sys.exit("Invalid criteria: "+criteria)
+                good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                good_tid_dict[good_tid]=1 # 1=exists
         num_good = len(good_tid_dict.keys())
         if verbose:
             print("Infile: ",infile)
@@ -137,13 +144,17 @@ class Gencode_Preprocess():
             print("Transcripts_After_Remove_Dupes: ",len(reduced_set.keys()))
         return reduced_set
 
-    def random_set(self,ids,tsize):
+    def random_subset(self,ids,max_transcripts):
         random_set={}
         shuffled = list(ids.keys())
-        random.seed(45)
-        random.shuffle(shuffled)
-        for tid in shuffled[:tsize]:
-            random_set[tid] = 1 # signal existence
+        if max_transcripts is None: # subset = entire set
+            for tid in shuffled:
+                random_set[tid] = 1 # signal existence
+        else:
+            random.seed(45)
+            random.shuffle(shuffled)
+            for tid in shuffled[:max_transcripts]:
+                random_set[tid] = 1 # signal existence
         return random_set
 
 def args_parse():
@@ -155,7 +166,9 @@ def args_parse():
     parser.add_argument(
         'outfile', help='output filename (fasta)', type=str)
     parser.add_argument(
-        '--subset', help='min|max|median|all', type=str, default="median")
+        '--keep', help='max transcripts (no limit)', type=int)
+    parser.add_argument(
+        '--subset', help='short|long|median (all)', type=str, default="all")
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
@@ -167,11 +180,12 @@ if __name__ == "__main__":
         infile=args.infile
         outfile=args.outfile
         subset=args.subset
+        keep=args.keep
         fixer = Gencode_Preprocess(args.debug)
         metadata = fixer.load_transcript_metadata(infile)
-        keep_transcripts = fixer.one_transcript_per_gene(metadata,subset)
+        keep_transcripts = fixer.subset_transcripts(metadata,subset)
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
-        keep_transcripts = fixer.random_set(keep_transcripts,16000)
+        keep_transcripts = fixer.random_subset(keep_transcripts,keep)
         fixer.process_fasta(infile,outfile,keep_transcripts)
     except Exception:
         print()
