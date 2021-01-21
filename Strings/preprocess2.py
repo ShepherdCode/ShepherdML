@@ -151,6 +151,8 @@ def args_parse():
     parser.add_argument(
         'outfile', help='output filename (fasta)', type=str)
     parser.add_argument(
+        '--subset', help='min|max|median|all', type=str, default="median")
+    parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
     args = parser.parse_args()
@@ -160,8 +162,9 @@ if __name__ == "__main__":
         args_parse()
         infile=args.infile
         outfile=args.outfile
+        subset=args.subset
         fixer = Gencode_Preprocess(args.debug)
-        keep_transcripts = fixer.one_transcript_per_gene(infile,'median')
+        keep_transcripts = fixer.one_transcript_per_gene(infile,subset)
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
         keep_transcripts = fixer.random_set(keep_transcripts,16000)
         fixer.process_fasta(infile,outfile,keep_transcripts)
