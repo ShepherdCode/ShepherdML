@@ -60,26 +60,31 @@ class Gencode_Preprocess():
         if verbose:
             print("Output_sequences: ",sn)
 
-    def one_transcript_per_gene(self,infile,criteria='max',verbose=True):
-        '''Criteria can be one of: min, max, median.
-        Rely on length provided in GenCode defline.'''
+    def load_transcript_metadata(self,infile):
+        '''Load metadata from FASTA file.
+        Load data structure of transcript ID & length
+        organized by gene ID.'''
         transcripts_per_gene={}
-        num_deflines = 0
-        num_genes = 0
-        num_transcripts = 0
         with open(infile, 'r') as infa:
             for line in infa:
                 if line[0]==DEFLINE_PREFIX:
-                    num_deflines += 1
                     (tid,gid,slen)=Parser.parse_defline(line)
                     if not gid in transcripts_per_gene:
                         transcripts_per_gene[gid]=[]
-                        num_genes += 1
                     tuple=(tid,gid,slen)
                     transcripts_per_gene[gid].append(tuple)
-                    num_transcripts += 1
+        return transcripts_per_gene
+
+    def one_transcript_per_gene(self,metadata,criteria='max',verbose=True):
+        '''Criteria can be one of: min, max, median.
+        Choose which transcripts IDs to keep.
+        Rely on length provided in GenCode defline.'''
         good_tid_dict={}
-        for transcripts_one_gene in transcripts_per_gene.values():
+        num_genes = 0
+        num_transcripts = 0
+        for transcripts_one_gene in metadata.values():
+            num_genes += 1
+            num_transcripts += len(transcripts_one_gene)
             sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
             if (criteria=='max'):
                 good_tuple = sorted_tuples[-1]
@@ -94,7 +99,6 @@ class Gencode_Preprocess():
         num_good = len(good_tid_dict.keys())
         if verbose:
             print("Infile: ",infile)
-            print("Input_Deflines: ",num_deflines)
             print("Input_Genes: ",num_genes)
             print("Input_Transcripts: ",num_transcripts)
             print("Retained_Transcripts: ",num_good)
@@ -164,7 +168,8 @@ if __name__ == "__main__":
         outfile=args.outfile
         subset=args.subset
         fixer = Gencode_Preprocess(args.debug)
-        keep_transcripts = fixer.one_transcript_per_gene(infile,subset)
+        metadata = fixer.load_transcript_metadata(infile)
+        keep_transcripts = fixer.one_transcript_per_gene(metadata,subset)
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
         keep_transcripts = fixer.random_set(keep_transcripts,16000)
         fixer.process_fasta(infile,outfile,keep_transcripts)
