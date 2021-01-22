@@ -75,7 +75,7 @@ class Gencode_Preprocess():
                     transcripts_per_gene[gid].append(tuple)
         return transcripts_per_gene
 
-    def subset_transcripts(self,metadata,criteria,verbose=True):
+    def subset_transcripts(self,metadata,criteria,hard,verbose=True):
         '''Choose which transcripts IDs to keep.
         Criteria must be one of short|long|median|all.
         Rely on length provided in GenCode defline.'''
@@ -85,24 +85,28 @@ class Gencode_Preprocess():
         for transcripts_one_gene in metadata.values():
             num_genes += 1
             num_transcripts += len(transcripts_one_gene)
-            if criteria=='all':
-                for good_tuple in transcripts_one_gene:
-                    good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
-                    good_tid_dict[good_tid]=1 # 1=exists
-            else:
-                sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
+            sorted_tuples=sorted(transcripts_one_gene,key=Gencode_Preprocess.getLen)
+            if hard is None or sorted_tuples[-1][2]<=hard:
                 if criteria=='long':
                     good_tuple = sorted_tuples[-1]
+                    good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                    good_tid_dict[good_tid]=1 # 1=exists
                 elif criteria=='median':
                     # given 2 median transcripts, we'll take the shorter
                     middle = floor((len(sorted_tuples)-1)/2)
                     good_tuple = sorted_tuples[middle]
+                    good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                    good_tid_dict[good_tid]=1 # 1=exists
                 elif criteria=='short':
                     good_tuple = sorted_tuples[0]
+                    good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                    good_tid_dict[good_tid]=1 # 1=exists
+                elif criteria=='all':
+                    for good_tuple in transcripts_one_gene:
+                        good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
+                        good_tid_dict[good_tid]=1 # 1=exists
                 else:
                     sys.exit("Invalid criteria: "+criteria)
-                good_tid=good_tuple[0] # 0=tid, 1=gid, 2=slen
-                good_tid_dict[good_tid]=1 # 1=exists
         num_good = len(good_tid_dict.keys())
         if verbose:
             print("Infile: ",infile)
@@ -135,11 +139,14 @@ class Gencode_Preprocess():
         sorted_tuples=sorted(tuples,key=Gencode_Preprocess.getSeq)
         reduced_set = {}
         for i in range(1,len(sorted_tuples)):
+            prev_tid=sorted_tuples[i-1][0]
             this_tid=sorted_tuples[i][0]
             prev_seq=sorted_tuples[i-1][1]
             this_seq=sorted_tuples[i][1]
             if prev_seq!=this_seq:
                 reduced_set[this_tid]=1
+            #else:
+            #    print("Same %s = %s"%(prev_tid,this_tid))
         if verbose:
             print("Transcripts_After_Remove_Dupes: ",len(reduced_set.keys()))
         return reduced_set
@@ -166,7 +173,9 @@ def args_parse():
     parser.add_argument(
         'outfile', help='output filename (fasta)', type=str)
     parser.add_argument(
-        '--keep', help='max transcripts (no limit)', type=int)
+        '--hard', help='exclude gene if any transcript is longer', type=int)
+    parser.add_argument(
+        '--keep', help='num transcripts (no limit)', type=int)
     parser.add_argument(
         '--subset', help='short|long|median (all)', type=str, default="all")
     parser.add_argument(
@@ -181,9 +190,10 @@ if __name__ == "__main__":
         outfile=args.outfile
         subset=args.subset
         keep=args.keep
+        hard=args.hard
         fixer = Gencode_Preprocess(args.debug)
         metadata = fixer.load_transcript_metadata(infile)
-        keep_transcripts = fixer.subset_transcripts(metadata,subset)
+        keep_transcripts = fixer.subset_transcripts(metadata,subset,hard)
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
         keep_transcripts = fixer.random_subset(keep_transcripts,keep)
         fixer.process_fasta(infile,outfile,keep_transcripts)
