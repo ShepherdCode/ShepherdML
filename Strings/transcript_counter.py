@@ -9,13 +9,13 @@ import random
 class AnnotationSet():
     def __init__(self,debug=False):
         self.debug=debug
-        self.genes=[]  # to do: dict of ID?
+        self.genes={}
 
     def count_genes(self):
         return len(self.genes)
 
     def add_gene(self,id):
-        self.genes.append(id)
+        self.genes[id]=1  # use 1 for exists
 
 class GFF_Parser():
     '''With GenCode GFF in mind.'''
@@ -24,7 +24,6 @@ class GFF_Parser():
         self.debug=debug
     def load_file(self):
         COMMENT_PREFIX='#'
-        GENE='gene'
         infile=self.filename
         annot = AnnotationSet()
         lno = 0
@@ -35,8 +34,9 @@ class GFF_Parser():
                     lno += 1
                     if not line.startswith(COMMENT_PREFIX):
                         gff_line=self.parse_line(line)
-                        if gff_line['entity']==GENE:
-                            annot.add_gene(1) # to do: parse ID
+                        if gff_line['entity']=='gene':
+                            id=gff_line['ID']
+                            annot.add_gene(id) # to do: parse ID
         except Exception as e:
             print('Problem reading file %s'%infile)
             print('Encountered at line %d'%lno)
@@ -53,11 +53,21 @@ class GFF_Parser():
             gff_line['stop_pos']=fields[4]
             gff_line['strand']=fields[6]
             gff_line['extra']=fields[8]
+            self.parse_extra(gff_line)
         except Exception as e:
             print('Cannot parse this line: '+oneline)
             print(e)
             raise Exception
         return (gff_line)
+    def parse_extra(self,gff_line):
+        FIELD_SEPARATOR=';'
+        extra=gff_line['extra']
+        if extra is not None:
+            fields=extra.split(FIELD_SEPARATOR)
+            for field in fields:
+                if field.startswith('ID='):
+                    gff_line['ID']=field[3:]
+                    break
 
 def args_parse():
     global args
