@@ -35,7 +35,7 @@ class AnnotationSet():
             self.gene_to_transcripts[gid]=[]
         self.gene_to_transcripts[gid].append(tid)
     def histogram_transcripts_per_gene(self):
-        MAX=100
+        MAX=50
         tpg=np.zeros(MAX)
         for gid in self.gene_to_transcripts:
             cnt = len(self.gene_to_transcripts[gid])
@@ -43,14 +43,15 @@ class AnnotationSet():
                 cnt=MAX-1   # stuff overflow in last bin
             tpg[cnt] += 1
         for i in range(MAX):
-            print(i,tpg[i])
+            print('%d\t%f'%(i,tpg[i]))
 
 class GFF_Parser():
     '''With GenCode GFF in mind.'''
     def __init__(self,filename,debug=False):
         self.filename=filename
         self.debug=debug
-    def load_file(self):
+    def load_file(self,type):
+        '''Type should be 'nc' or 'pc' or None'''
         COMMENT_PREFIX='#'
         PSEUDOAUTOSOMALREGION='PAR_Y'
         infile=self.filename
@@ -68,10 +69,13 @@ class GFF_Parser():
                         gff_line=self.parse_line(line)
                         if gff_line['ID'].endswith(PSEUDOAUTOSOMALREGION):
                             annot.add_ignored()
-                        elif gff_line['entity']=='transcript':
-                            gid=gff_line['gene_id']
-                            tid=gff_line['transcript_id']
-                            annot.add_transcript(gid,tid)
+                        elif (type is None or
+                        type=='nc' and 'gene_type' in gff_line and gff_line['gene_type']=='lncRNA' or
+                        type=='pc' and 'gene_type' in gff_line and gff_line['gene_type']=='protein_coding'):
+                            if gff_line['entity']=='transcript':
+                                gid=gff_line['gene_id']
+                                tid=gff_line['transcript_id']
+                                annot.add_transcript(gid,tid)
         except Exception as e:
             print('Problem reading file %s'%infile)
             print('Encountered at line %d'%lno)
@@ -110,6 +114,9 @@ class GFF_Parser():
                 elif field.startswith('transcript_id='):
                     value=field[14:]
                     gff_line['transcript_id']=value
+                elif field.startswith('gene_type='):
+                    value=field[10:]
+                    gff_line['gene_type']=value
 
 def args_parse():
     global args
@@ -117,10 +124,8 @@ def args_parse():
         description='Preprocess GenCode GFF3 file.')
     parser.add_argument(
         'infile', help='input filename (GFF3)', type=str)
-    #parser.add_argument(
-    #    '--keep', help='num transcripts (no limit)', type=int)
-    #parser.add_argument(
-    #    '--subset', help='short|long|median (all)', type=str, default="all")
+    parser.add_argument(
+        '--type', help='pc or nc (all)', type=str)
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
@@ -131,8 +136,12 @@ if __name__ == "__main__":
         args_parse()
         infile=args.infile
         debug=args.debug
+        if args.type is None:
+            type=None
+        else:
+            type=args.type.lower()
         parser = GFF_Parser(infile,debug)
-        ant = parser.load_file()
+        ant = parser.load_file(type)
         print("%d comments ignored"%ant.count_comments())
         print("%d PAR annotations ignored"%ant.count_ignored())
         print("%d genes"%ant.count_genes())
