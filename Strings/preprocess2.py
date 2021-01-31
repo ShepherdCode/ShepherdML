@@ -117,6 +117,7 @@ class Gencode_Preprocess():
 
     def remove_duplicates(self,good_tid,infile,verbose=True):
         '''GenCode includes ~60 identical sequences from different genes.
+        About half are explained as X and Y PAR (pseudo-autosomal region).
         Sort by len, then test neighbors for seq identity.'''
         tuples=[]
         with open(infile, 'r') as infa:
@@ -150,6 +151,18 @@ class Gencode_Preprocess():
         if verbose:
             print("Transcripts_After_Remove_Dupes: ",len(reduced_set.keys()))
         return reduced_set
+
+    def remove_PAR(self,ids,verbose=True):
+        '''GenCode include identical X and Y genes
+        from PAR (pseudo-autosomal region).'''
+        keep_set={}
+        PSUEDOAUTOSOMALREGION='PAR_Y'
+        for id in ids:
+            if not id.endswith(PSUEDOAUTOSOMALREGION):
+                keep_set[id] = 1 # signal existence
+        if verbose:
+            print("Transcripts_After_Remove_PAR: ",len(keep_set.keys()))
+        return keep_set
 
     def random_subset(self,ids,max_transcripts):
         random_set={}
@@ -194,6 +207,7 @@ if __name__ == "__main__":
         fixer = Gencode_Preprocess(args.debug)
         metadata = fixer.load_transcript_metadata(infile)
         keep_transcripts = fixer.subset_transcripts(metadata,subset,hard)
+        keep_transcripts = fixer.remove_PAR(keep_transcripts)
         keep_transcripts = fixer.remove_duplicates(keep_transcripts,infile)
         keep_transcripts = fixer.random_subset(keep_transcripts,keep)
         fixer.process_fasta(infile,outfile,keep_transcripts)

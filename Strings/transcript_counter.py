@@ -11,9 +11,21 @@ class AnnotationSet():
         self.debug=debug
         self.transcripts_per_gene={}
         self.exons_per_transcript={}
+        self.lines_ignored=0
+        self.comments_ignored=0
+    def count_ignored(self):
+        return self.lines_ignored
+    def add_ignored(self):
+        self.lines_ignored += 1
+    def count_comments(self):
+        return self.comments_ignored
+    def add_comment(self):
+        self.comments_ignored += 1
     def count_genes(self):
         return len(self.transcripts_per_gene)
     def add_gene(self,id):
+        if id in self.transcripts_per_gene:
+            print("Warning: id exists ",id)
         self.transcripts_per_gene[id] = 0
     def count_transcripts(self):
         return len(self.exons_per_transcript)
@@ -27,6 +39,7 @@ class GFF_Parser():
         self.debug=debug
     def load_file(self):
         COMMENT_PREFIX='#'
+        PSEUDOAUTOSOMALREGION='PAR_Y'
         infile=self.filename
         annot = AnnotationSet()
         lno = 0
@@ -36,9 +49,13 @@ class GFF_Parser():
             with open(infile, 'r') as infa:
                 for line in infa:
                     lno += 1
-                    if not line.startswith(COMMENT_PREFIX):
+                    if line.startswith(COMMENT_PREFIX):
+                        annot.add_comment()
+                    else:
                         gff_line=self.parse_line(line)
-                        if gff_line['entity']=='gene':
+                        if gff_line['ID'].endswith(PSEUDOAUTOSOMALREGION):
+                            annot.add_ignored()
+                        elif gff_line['entity']=='gene':
                             id=gff_line['gene_id']
                             annot.add_gene(id)
                         elif gff_line['entity']=='transcript':
@@ -73,7 +90,10 @@ class GFF_Parser():
         if extra is not None:
             fields=extra.split(FIELD_SEPARATOR)
             for field in fields:
-                if field.startswith('gene_id='):
+                if field.startswith('ID='):
+                    value=field[3:]
+                    gff_line['ID']=value
+                elif field.startswith('gene_id='):
                     value=field[8:]
                     gff_line['gene_id']=value
                 elif field.startswith('transcript_id='):
@@ -102,6 +122,8 @@ if __name__ == "__main__":
         debug=args.debug
         parser = GFF_Parser(infile,debug)
         ant = parser.load_file()
+        print("%d comments ignored"%ant.count_comments())
+        print("%d PAR annotations ignored"%ant.count_ignored())
         print("%d genes"%ant.count_genes())
         print("%d transcripts"%ant.count_transcripts())
     except Exception:
