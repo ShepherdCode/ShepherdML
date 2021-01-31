@@ -5,12 +5,13 @@ import sys
 from datetime import datetime
 from math import floor
 import random
+import numpy as np
 
 class AnnotationSet():
     def __init__(self,debug=False):
         self.debug=debug
-        self.transcripts_per_gene={}
-        self.exons_per_transcript={}
+        self.gene_to_transcripts={}
+        self.transcript_ids={}
         self.lines_ignored=0
         self.comments_ignored=0
     def count_ignored(self):
@@ -22,15 +23,27 @@ class AnnotationSet():
     def add_comment(self):
         self.comments_ignored += 1
     def count_genes(self):
-        return len(self.transcripts_per_gene)
-    def add_gene(self,id):
-        if id in self.transcripts_per_gene:
-            print("Warning: id exists ",id)
-        self.transcripts_per_gene[id] = 0
+        return len(self.gene_to_transcripts)
     def count_transcripts(self):
-        return len(self.exons_per_transcript)
-    def add_transcript(self,id):
-        self.exons_per_transcript[id] = 0
+        return len(self.transcript_ids)
+    def add_transcript(self,gid,tid):
+        if tid in self.transcript_ids:
+            print("WARNING: duplicate transcript id ",tid)
+        else:
+            self.transcript_ids[tid]=1
+        if gid not in self.gene_to_transcripts:
+            self.gene_to_transcripts[gid]=[]
+        self.gene_to_transcripts[gid].append(tid)
+    def histogram_transcripts_per_gene(self):
+        MAX=100
+        tpg=np.zeros(MAX)
+        for gid in self.gene_to_transcripts:
+            cnt = len(self.gene_to_transcripts[gid])
+            if cnt>=MAX:
+                cnt=MAX-1   # stuff overflow in last bin
+            tpg[cnt] += 1
+        for i in range(MAX):
+            print(i,tpg[i])
 
 class GFF_Parser():
     '''With GenCode GFF in mind.'''
@@ -55,12 +68,10 @@ class GFF_Parser():
                         gff_line=self.parse_line(line)
                         if gff_line['ID'].endswith(PSEUDOAUTOSOMALREGION):
                             annot.add_ignored()
-                        elif gff_line['entity']=='gene':
-                            id=gff_line['gene_id']
-                            annot.add_gene(id)
                         elif gff_line['entity']=='transcript':
-                            id=gff_line['transcript_id']
-                            annot.add_transcript(id)
+                            gid=gff_line['gene_id']
+                            tid=gff_line['transcript_id']
+                            annot.add_transcript(gid,tid)
         except Exception as e:
             print('Problem reading file %s'%infile)
             print('Encountered at line %d'%lno)
@@ -126,6 +137,7 @@ if __name__ == "__main__":
         print("%d PAR annotations ignored"%ant.count_ignored())
         print("%d genes"%ant.count_genes())
         print("%d transcripts"%ant.count_transcripts())
+        ant.histogram_transcripts_per_gene()
     except Exception:
         print()
         if args.debug:
