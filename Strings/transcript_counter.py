@@ -17,8 +17,8 @@ class AnnotationSet():
         self.transcripts_per_gene[id] = 0
     def count_transcripts(self):
         return len(self.exons_per_transcript)
-    def add_transcripts(self,id):
-        self.exons_per_transcript[id] = 0 
+    def add_transcript(self,id):
+        self.exons_per_transcript[id] = 0
 
 class GFF_Parser():
     '''With GenCode GFF in mind.'''
@@ -31,6 +31,7 @@ class GFF_Parser():
         annot = AnnotationSet()
         lno = 0
         fields=None
+        line=None
         try:
             with open(infile, 'r') as infa:
                 for line in infa:
@@ -38,12 +39,16 @@ class GFF_Parser():
                     if not line.startswith(COMMENT_PREFIX):
                         gff_line=self.parse_line(line)
                         if gff_line['entity']=='gene':
-                            id=gff_line['ID']
+                            id=gff_line['gene_id']
                             annot.add_gene(id)
+                        elif gff_line['entity']=='transcript':
+                            id=gff_line['transcript_id']
+                            annot.add_transcript(id)
         except Exception as e:
             print('Problem reading file %s'%infile)
             print('Encountered at line %d'%lno)
-            print(e)
+            print(line)
+            raise(e)
         return annot
     def parse_line(self,oneline):
         FIELD_SEPARATOR='\t'
@@ -70,14 +75,9 @@ class GFF_Parser():
             for field in fields:
                 if field.startswith('gene_id='):
                     value=field[8:]
-                    if gff_line['entity']=='gene':
-                        gff_line['ID']=value
                     gff_line['gene_id']=value
-                    break
-                if field.startswith('transcript_id='):
+                elif field.startswith('transcript_id='):
                     value=field[14:]
-                    if gff_line['entity']=='transcript':
-                        gff_line['ID']=value
                     gff_line['transcript_id']=value
 
 def args_parse():
@@ -86,10 +86,10 @@ def args_parse():
         description='Preprocess GenCode GFF3 file.')
     parser.add_argument(
         'infile', help='input filename (GFF3)', type=str)
-    parser.add_argument(
-        '--keep', help='num transcripts (no limit)', type=int)
-    parser.add_argument(
-        '--subset', help='short|long|median (all)', type=str, default="all")
+    #parser.add_argument(
+    #    '--keep', help='num transcripts (no limit)', type=int)
+    #parser.add_argument(
+    #    '--subset', help='short|long|median (all)', type=str, default="all")
     parser.add_argument(
         '--debug', help='Print traceback after exception.',
         action='store_true')
@@ -99,12 +99,11 @@ if __name__ == "__main__":
     try:
         args_parse()
         infile=args.infile
-        subset=args.subset
-        keep=args.keep
         debug=args.debug
         parser = GFF_Parser(infile,debug)
         ant = parser.load_file()
         print("%d genes"%ant.count_genes())
+        print("%d transcripts"%ant.count_transcripts())
     except Exception:
         print()
         if args.debug:
