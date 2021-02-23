@@ -67,7 +67,7 @@ def get_index_placement(total_codons):
   frame: The frame the sequence should be in which determines how many bases are appended to the sequences start. Must be 1, 2 or 3
 """  
 def generate_seq(length, coding = False, frame = 1):
-  codons_to_place = (length//3)
+  codons_to_place = (length//3) + 1
 
   if coding and frame in (1, 2 ,3):
     codons_to_place = codons_to_place - 2
@@ -105,10 +105,10 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
   frame = int(frame)
 
   # The minimum number of bases in a sequence
-  MIN = 800
+  #MIN = 800
 
   # The Maximum number of bases in a sequence
-  MAX = 1000
+  #MAX = 1000
 
   if coding:
     with open(outputfile_name, 'w') as file:
@@ -116,7 +116,8 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
       fastaheader = [headerframe, ".1"]
       for i in range(1, lines+1):
         padded = f'{i:010}'
-        sequence, target_coding, target_frame, placed_indices  = generate_seq(random.randint(MIN, MAX+1), coding, frame)
+        #sequence, target_coding, target_frame, placed_indices  = generate_seq(random.randint(MIN, MAX+1), coding, frame)
+        sequence, target_coding, target_frame, placed_indices  = generate_seq(1000, coding, frame)
         file.write(f"{(padded).join(fastaheader)} Coding {target_coding} Frame {target_frame} Start_Index {placed_indices[0]} Stop_Index {placed_indices[1]}" +"\n")
         file.write(sequence+"\n")  
     return True
@@ -126,7 +127,8 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
       fastaheader = [headerframe, ".1"]
       for i in range(1, lines+1):
         padded = f'{i:010}'
-        sequence, target_coding, target_frame, placed_indices  = generate_seq(random.randint(MIN, MAX+1), coding, frame)
+        #sequence, target_coding, target_frame, placed_indices  = generate_seq(random.randint(MIN, MAX+1), coding, frame)
+        sequence, target_coding, target_frame, placed_indices  = generate_seq(1000, coding, frame)
         file.write(f"{(padded).join(fastaheader)} Coding {target_coding} Frame {target_frame}" +"\n")
         file.write(sequence+"\n")  
     return False
