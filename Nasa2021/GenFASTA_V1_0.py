@@ -16,14 +16,14 @@ all_codons = ["".join(list(codon)) for codon in Codons]
 start = "ATG"
 stop = ["TAA", "TAG", "TGA"]
 '''
- Appends a random A, G, or C for the input frame
+ Appends a random A, G, C, or T for the input frame
  e.g. appends 1 character if in frame 2, and 2 if in frame 3
 '''
 def shift_frame(input_seq,frame = 2):
   output = input_seq
   if frame in (1,2,3):
     for i in range(1%frame):
-      output.insert(0, random.choice(("A","G","C")))
+      output.insert(0, random.choice(("A","G","C","T")))
     return output
   else:
     raise ValueError("Frame Must Be 1, 2 or 3. Frame Entered: " +frame)
@@ -69,15 +69,24 @@ def get_index_placement(total_codons):
 def generate_seq(length, coding = False, frame = 1):
   codons_to_place = (length//3) + 1
 
-  if coding and frame in (1, 2 ,3):
-    codons_to_place = codons_to_place - 2
-    pre_stop_placed = codon_placer(codons_to_place)
-    start_index,stop_index = get_index_placement(codons_to_place)
-    pre_stop_placed.insert(start_index, start)
-    pre_stop_placed.insert(stop_index, random.choice(stop))
-    output = shift_frame(pre_stop_placed, frame)
+  if coding and frame in (1,2,3):
+    start_index, stop_index = get_index_placement(codons_to_place)
+    UTR_5_len = start_index-1
+    orf_length = stop_index-start_index - 2
+    UTR_3_len = codons_to_place - stop_index + 1
+      
+    UTR_5 = codon_placer(UTR_5_len, False)
+    sequence_orf = codon_placer(orf_length, True)
+    sequence_orf.insert(0, start)
+    sequence_orf.append(random.choice(stop))
+    UTR_3 = codon_placer(UTR_3_len, False)
+
+    UTR_5.extend(sequence_orf)
+    UTR_5.extend(UTR_3)
+    output = shift_frame(UTR_5, frame)
     output = ''.join(output)
-    return output[0:length] , coding, frame, (start_index, stop_index)
+    return output[0:length], coding, frame, (start_index, stop_index)
+
 
   elif not coding and frame in (1,2,3):
     placed_codons = codon_placer(codons_to_place, coding)
