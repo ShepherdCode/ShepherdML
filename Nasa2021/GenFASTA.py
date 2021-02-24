@@ -7,14 +7,17 @@ import argparse
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
-Pairs = ["A","C", "G", "T"]
+Pairs = ("A","C", "G", "T")
 
 Codons = itertools.product(Pairs, repeat=3)
 
 all_codons = ["".join(list(codon)) for codon in Codons]
 
+
 start = "ATG"
-stop = ["TAA", "TAG", "TGA"]
+stop = ("TAA", "TAG", "TGA")
+
+no_stops = [codon for codon in all_codons if codon not in stop]
 '''
  Appends a random A, G, C, or T for the input frame
  e.g. appends 1 character if in frame 2, and 2 if in frame 3
@@ -34,17 +37,13 @@ def shift_frame(input_seq,frame = 2):
   and all_codons if not coding
 '''
 def codon_placer(length, coding = True):
-  output = []
-  no_stops = [codon for codon in all_codons if codon not in stop]
+  lno_stops = no_stops
+  lall_codons = all_codons
 
   if coding == True:
-    for i in range(length):
-      output.append(random.choice(no_stops))
-    return output
+    return random.choices(lno_stops, k=length)
   else:
-    for i in range(length):
-      output.append(random.choice(all_codons))
-    return output
+    return random.choices(lall_codons,k=length)
 
 
 
@@ -121,7 +120,7 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
 
   if working:
     with open(outputfile_name, 'w') as file:
-      headerframe = f">GENF{frame}"
+      headerframe = f">GENPC{frame}"
       fastaheader = [headerframe, ".1"]
       for i in range(1, lines+1):
         padded = f'{i:010}'
@@ -132,7 +131,7 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
     return True
   else:
     with open(outputfile_name, 'w') as file:
-      headerframe = f">GENF{frame}"
+      headerframe = f">GENNC{frame}"
       fastaheader = [headerframe, ".1"]
       for i in range(1, lines+1):
         padded = f'{i:010}'
