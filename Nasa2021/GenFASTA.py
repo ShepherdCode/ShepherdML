@@ -110,7 +110,7 @@ def generate_seq(length, coding = False, frame = 1):
 def CLI_GEN(lines, coding, frame, outputfile_name):
 
   lines = int(lines)
-  coding = bool(coding)
+  working = coding=="True"
   frame = int(frame)
 
   # The minimum number of bases in a sequence
@@ -119,7 +119,7 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
   # The Maximum number of bases in a sequence
   #MAX = 1000
 
-  if coding:
+  if working:
     with open(outputfile_name, 'w') as file:
       headerframe = f">GENF{frame}"
       fastaheader = [headerframe, ".1"]
@@ -137,7 +137,7 @@ def CLI_GEN(lines, coding, frame, outputfile_name):
       for i in range(1, lines+1):
         padded = f'{i:010}'
         #sequence, target_coding, target_frame, placed_indices  = generate_seq(random.randint(MIN, MAX+1), coding, frame)
-        sequence, target_coding, target_frame, placed_indices  = generate_seq(1000, coding, frame)
+        sequence, target_coding, target_frame  = generate_seq(1000, working, frame)
         file.write(f"{(padded).join(fastaheader)} Coding {target_coding} Frame {target_frame}" +"\n")
         file.write(sequence+"\n")  
     return False
