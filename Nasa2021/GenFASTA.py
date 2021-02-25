@@ -2,22 +2,20 @@ import random
 import itertools
 import os
 import sys
-import argparse
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
+
 Pairs = ("A","C", "G", "T")
-
 Codons = itertools.product(Pairs, repeat=3)
-
-all_codons = ["".join(list(codon)) for codon in Codons]
-
-
+all_codons = ["".join(codon) for codon in Codons]
 start = "ATG"
-stop = ("TAA", "TAG", "TGA")
-
+stop = ("TAA", "TAG", "TGA") 
 no_stops = [codon for codon in all_codons if codon not in stop]
+
+
+
 '''
  Appends a random A, G, C, or T for the input frame
  e.g. appends 1 character if in frame 2, and 2 if in frame 3
@@ -49,7 +47,7 @@ def codon_placer(length, coding = True):
 
 """
   returns random indexes a start and stop codon should be placed
-  arbitrarily chooses a variation within 1/3rd the 2nd and 4th Quintile (Is that even a word? Am I making this up?)
+  arbitrarily chooses a variation within 1/3rd the 2nd and 4th Quintile
 """
 def get_index_placement(total_codons):
   quintile = total_codons // 5
