@@ -17,13 +17,13 @@ no_stops = [codon for codon in all_codons if codon not in stop]
 
 
 '''
- Appends a random A, G, C, or T for the input frame
- e.g. appends 1 character if in frame 2, and 2 if in frame 3
+ prepends a random A, G, C, or T for the input frame
+ e.g. prepends 1 character if in frame 2, and 2 if in frame 3
 '''
 def shift_frame(input_seq,frame = 2):
   output = input_seq
   if frame in (1,2,3):
-    for i in range(1%frame):
+    for i in range(frame-1):
       output.insert(0, random.choice(("A","G","C","T")))
     return output
   else:
