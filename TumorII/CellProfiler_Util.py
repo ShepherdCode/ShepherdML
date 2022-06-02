@@ -10,6 +10,7 @@ class CP_Util():
         self.num_patches   =0
         self.test_patches  =None
         self.train_patches =None
+        self.reproducible = rnd.Random(123456)
     def _load_patches(self):
         """Load dataframe from CellProfiler Image.csv file.
         Change CP's word "Image" to "Patch".
@@ -47,8 +48,9 @@ class CP_Util():
         num_tumors = len(tumor_names)
         population = range(num_tumors)
         test_size = int(num_tumors*self.TEST_SET_ASIDE+0.5)
-        test_indices = rnd.sample(population,test_size)
+        test_indices = self.reproducible.sample(population,test_size)
         train_indices = np.setdiff1d(population,test_indices)
+        print('test',test_indices,'train',train_indices)
         test_tumor_names = tumor_names[test_indices]
         train_tumor_names = tumor_names[train_indices]
         self.test_patches = self._subset(patch_info,test_tumor_names)
