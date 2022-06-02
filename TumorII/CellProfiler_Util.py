@@ -40,25 +40,25 @@ class CP_Util():
         patch_info['PatchX']=tumor_x
         patch_info['PatchY']=tumor_y
         return patch_info
-    def _subset(self,df,tumors):
-        return df.loc[df['TumorName'].isin(tumors)]
+    def _subset(self,df,col,tumors):
+        return df.loc[df[col].isin(tumors)]
     def train_test_split(self):
-        patch_info = self._load_patches()  # dataframe
-        tumor_names = patch_info['TumorName'].unique()  # ndarray
+        patch_info = self._load_patches()  # type dataframe
+        tumor_names = patch_info['TumorName'].unique()  # type ndarray
         num_tumors = len(tumor_names)
         population = range(num_tumors)
         test_size = int(num_tumors*self.TEST_SET_ASIDE+0.5)
         test_indices = self.reproducible.sample(population,test_size)
         train_indices = np.setdiff1d(population,test_indices)
-        print('test',test_indices,'train',train_indices)
+        #print('test',test_indices,'train',train_indices) # confirm reproducible
         test_tumor_names = tumor_names[test_indices]
         train_tumor_names = tumor_names[train_indices]
-        self.test_patches = self._subset(patch_info,test_tumor_names)
-        self.train_patches = self._subset(patch_info,train_tumor_names)
-    def get_train_patches(self):
-        return self.train_patches  # dataframe
-    def get_test_patches(self):
-        return self.test_patches  # dataframe
+        self.test_patches = self._subset(patch_info,'TumorName',test_tumor_names)
+        self.train_patches = self._subset(patch_info,'TumorName',train_tumor_names)
+    def get_train_patches(self) -> pd.DataFrame:
+        return self.train_patches  
+    def get_test_patches(self) -> pd.DataFrame:
+        return self.test_patches  
     def validate_split(self):
         num_train_patches = len(self.train_patches)
         num_test_patches = len(self.test_patches)
@@ -69,3 +69,14 @@ class CP_Util():
         in_common = df1.merge(df2,how='inner',indicator=False)
         if len(in_common)>0:
             raise Exception('Sets not mutually exclusive.')
+    def get_nuclei(self,test_set=False):
+        good_patches = self.get_train_patches()
+        if test_set:
+            good_patches = self.get_test_patches()
+        filename = self.FILEPATH+self.NUCLEI_FN
+        image_info = pd.read_csv(filename)
+        column_rename = {'ImageNumber':'PatchNumber'}
+        nuclei_info = image_info.rename(column_rename,axis=1)
+        nuclei_info = nuclei_info.set_index('PatchNumber')
+        good_nuclei = nuclei_info[nuclei_info.index.isin(good_patches.index)]
+        return good_nuclei
