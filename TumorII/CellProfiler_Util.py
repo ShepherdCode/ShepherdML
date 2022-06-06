@@ -5,6 +5,7 @@ class CP_Util():
     def __init__(self,filepath='./'):
         self.FILEPATH  =filepath
         self.NUCLEI_FN ='Process100_Nucleus.csv'
+        self.RBC_FN ='Process100_MergeRBC.csv'
         self.PATCH_FN  ='Process100_Image.csv'
         self.TEST_SET_ASIDE =0.20
         self.num_patches   =0
@@ -40,7 +41,7 @@ class CP_Util():
         patch_info['PatchX']=tumor_x
         patch_info['PatchY']=tumor_y
         return patch_info
-    def _subset(self,df,col,tumors):
+    def subset_(self,df,col,tumors):
         return df.loc[df[col].isin(tumors)]
     def train_test_split(self):
         patch_info = self._load_patches()  # type dataframe
@@ -53,8 +54,8 @@ class CP_Util():
         #print('test',test_indices,'train',train_indices) # confirm reproducible
         test_tumor_names = tumor_names[test_indices]
         train_tumor_names = tumor_names[train_indices]
-        self.test_patches = self._subset(patch_info,'TumorName',test_tumor_names)
-        self.train_patches = self._subset(patch_info,'TumorName',train_tumor_names)
+        self.test_patches = self.subset_(patch_info,'TumorName',test_tumor_names)
+        self.train_patches = self.subset_(patch_info,'TumorName',train_tumor_names)
     def get_train_patches(self) -> pd.DataFrame:
         return self.train_patches  
     def get_test_patches(self) -> pd.DataFrame:
@@ -70,13 +71,17 @@ class CP_Util():
         if len(in_common)>0:
             raise Exception('Sets not mutually exclusive.')
     def get_nuclei(self,test_set=False):
+        return self.get_objects_(self.NUCLEI_FN,test_set)
+    def get_RBC(self,test_set=False):
+        return self.get_objects_(self.RBC_FN,test_set)
+    def get_objects_(self,FN,test_set):
         good_patches = self.get_train_patches()
         if test_set:
             good_patches = self.get_test_patches()
-        filename = self.FILEPATH+self.NUCLEI_FN
+        filename = self.FILEPATH+FN
         image_info = pd.read_csv(filename)
         column_rename = {'ImageNumber':'PatchNumber'}
-        nuclei_info = image_info.rename(column_rename,axis=1)
-        nuclei_info = nuclei_info.set_index('PatchNumber')
-        good_nuclei = nuclei_info[nuclei_info.index.isin(good_patches.index)]
-        return good_nuclei
+        object_info = image_info.rename(column_rename,axis=1)
+        object_info = object_info.set_index('PatchNumber')
+        good_objects = object_info[object_info.index.isin(good_patches.index)]
+        return good_objects
