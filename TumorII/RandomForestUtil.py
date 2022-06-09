@@ -17,21 +17,32 @@ class RF_Util:
     def fit(self):
         self.model=RandomForestClassifier()
         self.model.fit(self.Xtr,self.ytr)
-    def cross_validation(self,fold=5):   # shuffle required!
+    def cross_validation(self,fold=5):
+        # Put all train instances in set_train()
+        # and do not call set_validation().
+        # Shuffle the Xtrain prior to cross validation!
+        # The cross_val_score does a stratified split
+        # and does not usually shuffle.
+        # Training on mostly one class at a time does not work.
+        # The n_jobs parameter was not helpful for us:
+        # too many jobs all consuming extra memory.
         self.model=RandomForestClassifier()
-        # Crashes on large data when n_jobs is set for parallel operation.
-        cv_scores = cross_val_score(self.model, self.Xtr, self.ytr, cv=fold, verbose=2)
+        cv_scores = cross_val_score(
+            self.model, self.Xtr, self.ytr, cv=fold, verbose=2)
         return cv_scores
     def validation_accuracy(self):
+        # Prereqs: set_train(), set_validation(), fit().
         ypred = self.model.predict(self.Xval)
         matches = np.count_nonzero(self.yval==ypred)
         accuracy = 100.0 * matches / len(ypred)  
         return accuracy
     def validation_confusion(self):
+        # Prereqs: set_train(), set_validation(), fit().
         ypred = self.model.predict(self.Xval)
         cm = confusion_matrix(self.yval, ypred)
         return cm
     def important_features(self):
+        # Prereqs: fit().
         names = self.model.feature_names_in_
         importances = self.model.feature_importances_
         pairs = np.column_stack( (names,importances) )
