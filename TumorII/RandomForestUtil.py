@@ -17,9 +17,10 @@ class RF_Util:
     def fit(self):
         self.model=RandomForestClassifier()
         self.model.fit(self.Xtr,self.ytr)
-    def cross_validation(self,fold=5):
+    def cross_validation(self,fold=5):   # shuffle required!
         self.model=RandomForestClassifier()
-        cv_scores = cross_val_score(self.model, self.Xtr, self.ytr, cv=fold)
+        # Crashes on large data when n_jobs is set for parallel operation.
+        cv_scores = cross_val_score(self.model, self.Xtr, self.ytr, cv=fold, verbose=1)
         return cv_scores
     def validation_accuracy(self):
         ypred = self.model.predict(self.Xval)
