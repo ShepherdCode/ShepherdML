@@ -7,6 +7,8 @@ class CP_Util():
         self.NUCLEI_FN ='Process100_Nucleus.csv'
         self.RBC_FN ='Process100_MergeRBC.csv'
         self.PATCH_FN  ='Process100_Image.csv'
+        self.RBC_ROLLUP_FN  ='RBC_Rollup.csv'
+        self.NUC_ROLLUP_FN  ='Nucleus_Rollup.csv'
         self.TEST_SET_ASIDE =0.20
         self.num_patches   =0
         self.test_patches  =None
@@ -74,14 +76,20 @@ class CP_Util():
         return self.get_objects_(self.NUCLEI_FN,test_set)
     def get_RBC(self,test_set=False):
         return self.get_objects_(self.RBC_FN,test_set)
+    def get_RBC_rollup(self,test_set=False):
+        return self.get_objects_(self.RBC_ROLLUP_FN,test_set)
+    def get_nucleus_rollup(self,test_set=False):
+        return self.get_objects_(self.NUC_ROLLUP_FN,test_set)
     def get_objects_(self,FN,test_set):
         good_patches = self.get_train_patches()
         if test_set:
             good_patches = self.get_test_patches()
         filename = self.FILEPATH+FN
-        image_info = pd.read_csv(filename)
+        object_info = pd.read_csv(filename)
         column_rename = {'ImageNumber':'PatchNumber'}
-        object_info = image_info.rename(column_rename,axis=1)
+        object_info = object_info.rename(column_rename,axis=1)
         object_info = object_info.set_index('PatchNumber')
+        print('object_info:',object_info.index)
+        print('good_patches:',good_patches.index)
         good_objects = object_info[object_info.index.isin(good_patches.index)]
         return good_objects
