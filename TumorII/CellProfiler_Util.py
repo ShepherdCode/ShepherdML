@@ -4,16 +4,16 @@ import pandas as pd
 class CP_Util():
     def __init__(self,filepath='./'):
         self.FILEPATH  =filepath
-        self.NUCLEI_FN ='Process100_Nucleus.csv'
-        self.RBC_FN ='Process100_MergeRBC.csv'
-        self.PATCH_FN  ='Process100_Image.csv'
+        self.NUCLEI_FN      ='Process100_Nucleus.csv'
+        self.RBC_FN         ='Process100_MergeRBC.csv'
+        self.PATCH_FN       ='Process100_Image.csv'
         self.RBC_ROLLUP_FN  ='RBC_Rollup.csv'
         self.NUC_ROLLUP_FN  ='Nucleus_Rollup.csv'
         self.TEST_SET_ASIDE =0.20
-        self.num_patches   =0
-        self.test_patches  =None
-        self.train_patches =None
-        self.reproducible = rnd.Random(123456)
+        self.num_patches    =0
+        self.test_patches   =None
+        self.train_patches  =None
+        self.reproducible   = rnd.Random(123456)
     def _load_patches(self):
         """Load dataframe from CellProfiler Image.csv file.
         Change CP's word "Image" to "Patch".
@@ -89,7 +89,5 @@ class CP_Util():
         column_rename = {'ImageNumber':'PatchNumber'}
         object_info = object_info.rename(column_rename,axis=1)
         object_info = object_info.set_index('PatchNumber')
-        print('object_info:',object_info.index)
-        print('good_patches:',good_patches.index)
         good_objects = object_info[object_info.index.isin(good_patches.index)]
         return good_objects
