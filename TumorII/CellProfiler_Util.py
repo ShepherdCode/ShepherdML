@@ -53,11 +53,12 @@ class CP_Util():
         test_size = int(num_tumors*self.TEST_SET_ASIDE+0.5)
         test_indices = self.reproducible.sample(population,test_size)
         train_indices = np.setdiff1d(population,test_indices)
-        #print('test',test_indices,'train',train_indices) # confirm reproducible
         test_tumor_names = tumor_names[test_indices]
         train_tumor_names = tumor_names[train_indices]
         self.test_patches = self.subset_(patch_info,'TumorName',test_tumor_names)
         self.train_patches = self.subset_(patch_info,'TumorName',train_tumor_names)
+        print('Num tumors in test/train sets:',len(test_indices),len(train_indices))
+        print('Num patches in test/train sets:',len(self.test_patches),len(self.train_patches))
     def get_train_patches(self) -> pd.DataFrame:
         return self.train_patches  
     def get_test_patches(self) -> pd.DataFrame:
