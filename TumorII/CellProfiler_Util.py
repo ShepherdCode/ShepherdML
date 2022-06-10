@@ -57,7 +57,7 @@ class CP_Util():
         train_tumor_names = tumor_names[train_indices]
         self.test_patches = self.subset_(patch_info,'TumorName',test_tumor_names)
         self.train_patches = self.subset_(patch_info,'TumorName',train_tumor_names)
-        print('Num tumors in test/train sets:',len(test_indices),len(train_indices))
+        print('Num WSI in test/train sets:',len(test_indices),len(train_indices))
         print('Num patches in test/train sets:',len(self.test_patches),len(self.train_patches))
     def get_train_patches(self) -> pd.DataFrame:
         return self.train_patches  
