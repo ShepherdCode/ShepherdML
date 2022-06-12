@@ -8,6 +8,8 @@ class RF_Util:
         self.model=RandomForestClassifier()
     def get_model(self):
         return self.model
+    def set_model(self,model):
+        self.model=model
     def set_train(self,X,y):
         self.Xtr = X
         self.ytr = y
