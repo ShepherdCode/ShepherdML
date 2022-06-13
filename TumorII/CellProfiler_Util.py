@@ -26,9 +26,10 @@ class CP_Util():
         column_rename = {'ImageNumber':'PatchNumber','FileName_Tumor':'FileName'}
         patch_info = image_info.rename(column_rename,axis=1)
         patch_info.set_index('PatchNumber',inplace=True)
+        participants = []
         tumor_prefix = []
-        tumor_x=[]
-        tumor_y=[]
+        tumor_x      = []
+        tumor_y      = []
         for index,row in patch_info.iterrows():
             tumor = row['FileName']
             delim = tumor.index('_')
@@ -36,10 +37,20 @@ class CP_Util():
             suffix = tumor[delim+1:]
             x = suffix[:suffix.index('_')]
             y = suffix[suffix.index('_')+1:suffix.index('.')]
+            rest = prefix
+            delim = rest.index('-')
+            rest = rest[delim+1:] # remove project
+            delim = rest.index('-')
+            rest = rest[delim+1:] # remove tissue
+            delim = rest.index('-')
+            participant = rest[:delim] # remove everything after participant
+            #
+            participants.append(participant)
             tumor_prefix.append(prefix)
             tumor_x.append(x)
             tumor_y.append(y)
-        patch_info.insert(0,'TumorName',tumor_prefix)
+        patch_info.insert(0,'Participant',participants)
+        patch_info['TumorName']=tumor_prefix
         patch_info['PatchX']=tumor_x
         patch_info['PatchY']=tumor_y
         return patch_info
@@ -47,17 +58,17 @@ class CP_Util():
         return df.loc[df[col].isin(tumors)]
     def train_test_split(self):
         patch_info = self._load_patches()  # type dataframe
-        tumor_names = patch_info['TumorName'].unique()  # type ndarray
-        num_tumors = len(tumor_names)
-        population = range(num_tumors)
-        test_size = int(num_tumors*self.TEST_SET_ASIDE+0.5)
+        patient_names = patch_info['Participant'].unique()  # type ndarray
+        num_patients = len(patient_names)
+        population = range(num_patients)
+        test_size = int(num_patients*self.TEST_SET_ASIDE+0.5)
         test_indices = self.reproducible.sample(population,test_size)
         train_indices = np.setdiff1d(population,test_indices)
-        test_tumor_names = tumor_names[test_indices]
-        train_tumor_names = tumor_names[train_indices]
-        self.test_patches = self.subset_(patch_info,'TumorName',test_tumor_names)
-        self.train_patches = self.subset_(patch_info,'TumorName',train_tumor_names)
-        print('Num WSI in test/train sets:',len(test_indices),len(train_indices))
+        test_names = patient_names[test_indices]
+        train_names = patient_names[train_indices]
+        self.test_patches = self.subset_(patch_info,'Participant',test_names)
+        self.train_patches = self.subset_(patch_info,'Participant',train_names)
+        print('Num patients in test/train sets:',len(test_indices),len(train_indices))
         print('Num patches in test/train sets:',len(self.test_patches),len(self.train_patches))
     def get_train_patches(self) -> pd.DataFrame:
         return self.train_patches  
