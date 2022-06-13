@@ -2,6 +2,7 @@ import random as rnd
 import numpy as np
 import pandas as pd
 class CP_Util():
+    """Serve CellProfiler results for one cancer class"""
     def __init__(self,filepath='./'):
         self.FILEPATH  =filepath
         self.NUCLEI_FN      ='Process100_Nucleus.csv'
