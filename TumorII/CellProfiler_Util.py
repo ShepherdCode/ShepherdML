@@ -50,7 +50,7 @@ class CP_Util():
             tumor_x.append(x)
             tumor_y.append(y)
         patch_info.insert(0,'Participant',participants)
-        patch_info['TumorName']=tumor_prefix
+        patch_info['WSI']=tumor_prefix
         patch_info['PatchX']=tumor_x
         patch_info['PatchY']=tumor_y
         return patch_info
@@ -68,8 +68,14 @@ class CP_Util():
         train_names = patient_names[train_indices]
         self.test_patches = self.subset_(patch_info,'Participant',test_names)
         self.train_patches = self.subset_(patch_info,'Participant',train_names)
-        print('Num patients in test/train sets:',len(test_indices),len(train_indices))
-        print('Num patches in test/train sets:',len(self.test_patches),len(self.train_patches))
+        print('Train: %d participants, %d WSI, %d patches.'%
+              (self.train_patches['Participant'].nunique(),
+              self.train_patches['WSI'].nunique(),
+              len(self.train_patches)))
+        print('Test: %d participants, %d WSI, %d patches.'%
+              (self.test_patches['Participant'].nunique(),
+              self.test_patches['WSI'].nunique(),
+              len(self.test_patches)))
     def get_train_patches(self) -> pd.DataFrame:
         return self.train_patches  
     def get_test_patches(self) -> pd.DataFrame:
@@ -79,8 +85,8 @@ class CP_Util():
         num_test_patches = len(self.test_patches)
         if not num_train_patches + num_test_patches == self.num_patches:
             raise Exception('Apparent data loss.')
-        df1=pd.DataFrame(self.train_patches['TumorName'])
-        df2=pd.DataFrame(self.test_patches['TumorName'])
+        df1=pd.DataFrame(self.train_patches['Participant'])
+        df2=pd.DataFrame(self.test_patches['Participant'])
         in_common = df1.merge(df2,how='inner',indicator=False)
         if len(in_common)>0:
             raise Exception('Sets not mutually exclusive.')
