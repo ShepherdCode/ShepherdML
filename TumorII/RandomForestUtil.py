@@ -8,6 +8,8 @@ class RF_Util:
         self.model=RandomForestClassifier()
     def get_model(self):
         return self.model
+    def set_model(self,model):
+        self.model=model
     def set_train(self,X,y):
         self.Xtr = X
         self.ytr = y
@@ -27,8 +29,8 @@ class RF_Util:
         # The n_jobs parameter was not helpful for us:
         # too many jobs all consuming extra memory.
         self.model=RandomForestClassifier()
-        cv_scores = cross_val_score
-            (self.model, self.Xtr, self.ytr, cv=fold, verbose=1)
+        cv_scores = cross_val_score(
+            self.model, self.Xtr, self.ytr, cv=fold, verbose=2)
         return cv_scores
     def validation_accuracy(self):
         # Prereqs: set_train(), set_validation(), fit().
