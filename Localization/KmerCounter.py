@@ -7,11 +7,19 @@ class KmerCounter():
     MAX_COUNT = 2**8-1
     def __init__(self,K=4):
         self.setK(K)
+        self.OPTIMIZE=False
     def setK(self,K):
         self.K=K
         self.VOCABULARY_SIZE = KmerCounter.TOTAL_NUCLEOTIDES**K
+        # for K=4, we want MASK 00 11 11 11
+        mask='00'
+        for i in range(1,K):
+            mask = mask + '11'
+        self.MASK=int(mask,2)
     def get_vocabulary_size(self):
         return self.VOCABULARY_SIZE
+    def optimize(self):
+        self.OPTIMIZE = True
     def hash_value(self,token):
         '''
         Get the counts array index for the given K-mer.
@@ -32,6 +40,12 @@ class KmerCounter():
                 # Ignore tokens with N or any non-nucleotide
                 return None
         return kmer_hash
+    def subsequent_value(self,next_letter,prev_value):
+        bits = KmerCounter.NUCLEOTIDE_BITS[next_letter]  # protected against N
+        masked = prev_value & self.MASK   # erase 2 left-most bits of hash_value
+        shifted = masked << 2             # make room for 2 bits
+        next_value = shifted + bits       # add 2 new bits at right of hash_value
+        return next_value
     def seq_to_kmer_counts(self,seq):
         '''
         Clients should call setK() once,
@@ -41,11 +55,21 @@ class KmerCounter():
         For example, after setK(4) and counts=seq_to_kmer_counts('AAAAA'),
         then counts(hash_value('AAAA')) will be 2.
         '''
+        prev_value = None
+        next_letter = None
         counts = np.zeros(
             self.VOCABULARY_SIZE, KmerCounter.COUNT_TYPE)
         for p in range(len(seq)-self.K+1):
-            token=seq[p:p+self.K]
-            hash_value = self.hash_value(token)
+            next_letter = seq[p+self.K-1]
+            if self.OPTIMIZE and \
+            prev_value is not None and \
+            next_letter in KmerCounter.NUCLEOTIDE_BITS:
+                hash_value = self.subsequent_value(next_letter,prev_value)
+                prev_value = hash_value
+            else:
+                next_token=seq[p:p+self.K]
+                hash_value = self.hash_value(next_token)
+                prev_value = hash_value
             if hash_value is not None:
                 if counts[hash_value]<KmerCounter.MAX_COUNT:
                     counts[hash_value] += 1
