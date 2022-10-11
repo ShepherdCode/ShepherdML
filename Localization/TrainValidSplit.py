@@ -1,9 +1,15 @@
 from random import Random
 import numpy as np
 class Splitter():
-    def __init__(self,gid_tid,ordered_kmer_counts):
-        self.gid_tid = gid_tid
+    def __init__(self):
+        self.gid_tid = []
+        self.ordered_kmer_counts = []
+        self.gene_list=[]
+    def set_ids(self,gid_tid_row_label):
+        self.gid_tid = gid_tid_row_label
+    def set_counts(self,ordered_kmer_counts):
         self.ordered_kmer_counts = ordered_kmer_counts
+    def randomize(self):
         gene_set = set()
         for (gid,tid,row,label) in self.gid_tid:
             gene_set.add(gid)
