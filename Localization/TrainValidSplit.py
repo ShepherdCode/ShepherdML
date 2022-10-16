@@ -8,19 +8,20 @@ class Splitter():
         self.gid_tid = []
         self.ordered_kmer_counts = []
         self.gene_list=[]
-    def set_ids(self,gid_tid_row_label):
-        self.gid_tid = gid_tid_row_label
+    def set_ids(self,gid_tid_label):
+        self.gid_tid = gid_tid_label
     def set_counts(self,ordered_kmer_counts):
         self.ordered_kmer_counts = ordered_kmer_counts
     def randomize(self):
         gene_set = set()
-        for (gid,tid,row,label) in self.gid_tid:
+        for (gid,tid,label) in self.gid_tid:
             gene_set.add(gid)
         generator = Random()
         generator.seed(42)
         self.gene_list = list(gene_set)
         generator.shuffle(self.gene_list)  # in-place
     def load_sequences(self,gencode_file,labeled_genes):
+        '''Deprecated'''
         gid_tid = []
         with open(gencode_file,'r') as gencode:
             header = None
@@ -37,6 +38,27 @@ class Splitter():
                         gid_tid.append((gene_id,tran_id,rownum,label))
                 rownum += 1
         return gid_tid
+    def load_transcripts(self,gencode_file,labeled_genes):
+        # Example gencode file: CNRCI_coding_train_counts.K4.csv
+        gid_tid = []
+        kmercounts_all = []
+        with open(gencode_file,'r') as gencode:
+            header = None
+            csv = reader(gencode)
+            num_kmers = 0
+            for row in csv:
+                if header is None:
+                    header = row
+                else:
+                    gene_id = row.pop(0) 
+                    tran_id = row.pop(0)
+                    if gene_id in labeled_genes:
+                        label = labeled_genes[gene_id]
+                        gid_tid.append((gene_id,tran_id,label))
+                        kmercounts_one = np.asarray(row,dtype=np.int8)
+                        kmercounts_all.append(kmercounts_one)
+        npary = np.asarray(kmercounts_all)
+        return gid_tid,npary
     def load_labels(self,atlas_file,cells,RCI_THRESHOLDS):
         gene_labels = {}
         with open(atlas_file,'r') as atlas:
@@ -67,24 +89,34 @@ class Splitter():
         print('Positive labels:',positives)
         return gene_labels
     def train_valid_split(self,iteration, partitions):
-        # TO DO: make sure we don't leave out the last sequence due to rounding
         partition_size = int(len(self.gene_list) * 1.0/partitions)
         low = int(iteration*partition_size)
         high = int(low+partition_size)    
-        valid_genes = set(self.gene_list[low:high])
+        if iteration==partitions-1:
+            # To would around integer truncation after division,
+            # use all remaining genes on last partition
+            valid_genes = set(self.gene_list[low:])
+        else:
+            valid_genes = set(self.gene_list[low:high])
         # TO DO: Here, we grow lists one at a time.
         # It would be faster with fixed-size numpy arrays?
         X_train = []   
         X_valid = []
         y_train = []
         y_valid = []
-        for (gid,tid,row,label) in self.gid_tid:
+        # Assume one-to-one correspondence of rows in
+        # gid_tid and ordered_kmer_counts.
+        # Walk through both arrays in tandem,
+        # assign each row to train set or validation set.
+        row = 0
+        for (gid,tid,label) in self.gid_tid:
             if gid in valid_genes:
                 X_valid.append(self.ordered_kmer_counts[row])   
                 y_valid.append(label)
             else:
                 X_train.append(self.ordered_kmer_counts[row])   
                 y_train.append(label)
+            row += 1
         X_train = np.asarray(X_train)
         y_train = np.asarray(y_train)
         X_valid = np.asarray(X_valid)
