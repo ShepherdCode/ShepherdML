@@ -3,22 +3,24 @@ import regex
 
 class KmerCounter():
     NUCLEOTIDE_BITS={'A':0, 'C':1, 'G':2, 'T':3}
-    TOTAL_NUCLEOTIDES=4
+    ALPHABET_SIZE=len(NUCLEOTIDE_BITS.keys())
     BITS_PER_NUCLEOTIDE=2
+
+    BYTES=1   # will parameterize this later
     COUNT_TYPE=np.uint8
     MAX_COUNT = 2**8-1
+
     def __init__(self,K=4):
         self.setK(K)
     def setK(self,K):
         self.K=K
-        self.VOCABULARY_SIZE = KmerCounter.TOTAL_NUCLEOTIDES**K
         # for K=4, we want MASK 00 11 11 11
         mask='00'
         for i in range(1,K):
             mask = mask + '11'
         self.MASK=int(mask,2)
     def get_vocabulary_size(self):
-        return self.VOCABULARY_SIZE
+        return KmerCounter.ALPHABET_SIZE ** self.K
     def hash_value(self,token):
         '''
         Get the counts array index for the given K-mer.

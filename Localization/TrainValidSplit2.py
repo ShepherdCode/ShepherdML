@@ -80,13 +80,15 @@ class Splitter2():
         return thresholds
     def get_X_y(self, gene_to_rci:dict, thresholds:tuple):
         '''
-        Construct two numpy arrays.
+        Construct two numpy arrays, X and y.
         Use previously-loaded counts universe for X values.
         Filter by genes in given dict whose values exceed thresholds.
         Use thresholds to make y values that are 0 or 1.
+        Also return IDs of X merely for tracking & debugging.
         '''
         X_list = []
         y_list = []
+        ids  = []
         for i in range(len(self.ordered_gid_tid)):
             (gene_id,tran_id)=self.ordered_gid_tid[i]
             if gene_id in gene_to_rci:
@@ -100,9 +102,10 @@ class Splitter2():
                     kmer_counts=self.ordered_kmer_counts[i]
                     X_list.append(kmer_counts)
                     y_list.append(label)
+                    ids.append( (gene_id,tran_id) )
         X_array = np.asarray(X_list)
         y_array = np.asarray(y_list)
-        return X_array,y_array
+        return X_array,y_array,ids
     def get_gene_universe(self, atlas_file, cells):
         '''
         Returns dict of gene_id to RCI value,
