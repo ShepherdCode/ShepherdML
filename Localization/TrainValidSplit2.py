@@ -106,7 +106,7 @@ class Splitter2():
         X_array = np.asarray(X_list)
         y_array = np.asarray(y_list)
         return X_array,y_array,ids
-    def get_gene_universe(self, atlas_file, cells):
+    def get_gene_universe(self, atlas_file:str, cells:int):
         '''
         Returns dict of gene_id to RCI value,
         filtered for only genes with a numeric RCI in given cell line.
@@ -125,15 +125,16 @@ class Splitter2():
                     rci = float(row[1+cells]) # e.g. choose value from 5th cell line
                     if not isnan(rci):
                         rci_values[gene]=rci
-        print('Loaded values for cell line',cells)
-        print('Selected',len(rci_values),'values out of',genes_considered)
+        print('Loaded RCI values for cell line',cells)
+        print('Selected',len(rci_values),'values out of',genes_considered,'genes.')
         return rci_values
-    def load_counts_universe(self, counts_file)->None:
+    def load_counts_universe(self, counts_file:str):
         '''
         Load K-mer counts from a csv file. 
         Example file: CNRCI_coding_train_counts.K4.csv
-        Save the data in list instance variables.
-        Use the data later for get_X().
+        Training code should ignore the return values.
+        We save the data in list instance variables.
+        We use the data later for get_X_y().
         '''
         self.ordered_gid_tid = []
         self.ordered_kmer_counts = []
@@ -149,3 +150,7 @@ class Splitter2():
                     self.ordered_gid_tid.append( (gene_id,tran_id) )
                     kmercounts_one = np.asarray(row,dtype=np.int8)
                     self.ordered_kmer_counts.append(kmercounts_one)
+        print('Loaded',len(self.ordered_gid_tid),'gid+tid combinations.')
+        print('Loaded',len(self.ordered_kmer_counts),'rows of K-mer counts.')
+        # Training code should ignore the return values.
+        return self.ordered_gid_tid, self.ordered_kmer_counts  
