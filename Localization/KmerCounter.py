@@ -2,16 +2,17 @@ import numpy as np
 import regex
 
 class KmerCounter():
-    NUCLEOTIDE_BITS={'A':0, 'C':1, 'G':2, 'T':3}
-    ALPHABET_SIZE=len(NUCLEOTIDE_BITS.keys())
-    BITS_PER_NUCLEOTIDE=2
-
-    BYTES=1   # will parameterize this later
-    COUNT_TYPE=np.uint8
-    MAX_COUNT = 2**8-1
 
     def __init__(self,K=4):
         self.setK(K)
+        self.NUCLEOTIDE_BITS={'A':0, 'C':1, 'G':2, 'T':3}
+        self.ALPHABET_SIZE=len(self.NUCLEOTIDE_BITS.keys())
+        self.BITS_PER_NUCLEOTIDE=2
+        self.BYTES=1   # will parameterize this later
+        #self.COUNT_TYPE=np.uint8
+        #self.MAX_COUNT = 2**8-1
+        self.COUNT_TYPE=np.uint16
+        self.MAX_COUNT = 2**16-1
     def setK(self,K):
         self.K=K
         # for K=4, we want MASK 00 11 11 11
@@ -20,7 +21,7 @@ class KmerCounter():
             mask = mask + '11'
         self.MASK=int(mask,2)
     def get_vocabulary_size(self):
-        return KmerCounter.ALPHABET_SIZE ** self.K
+        return self.ALPHABET_SIZE ** self.K
     def hash_value(self,token):
         '''
         Get the counts array index for the given K-mer.
@@ -34,8 +35,8 @@ class KmerCounter():
         letters = list(token)
         for letter in letters:
             try:
-                additional = KmerCounter.NUCLEOTIDE_BITS[letter]
-                kmer_hash = kmer_hash << KmerCounter.BITS_PER_NUCLEOTIDE
+                additional = self.NUCLEOTIDE_BITS[letter]
+                kmer_hash = kmer_hash << self.BITS_PER_NUCLEOTIDE
                 kmer_hash = kmer_hash + additional
             except KeyError:
                 # Ignore tokens with N or any non-nucleotide
@@ -45,7 +46,7 @@ class KmerCounter():
         '''
         An optimization used by count_by_letter().
         '''
-        bits = KmerCounter.NUCLEOTIDE_BITS[next_letter]  # protected against N
+        bits = self.NUCLEOTIDE_BITS[next_letter]  # protected against N
         masked = prev_value & self.MASK   # erase 2 left-most bits of hash_value
         shifted = masked << 2             # make room for 2 bits
         next_value = shifted + bits       # add 2 new bits at right of hash_value
@@ -71,26 +72,26 @@ class KmerCounter():
         This is a reference implementation.
         '''
         counts = np.zeros(
-            self.VOCABULARY_SIZE, KmerCounter.COUNT_TYPE)
+            self.get_vocabulary_size(), self.COUNT_TYPE)
         token = 'A'*self.K
         i=0
         while token is not None:
             # string.count(substr) does not count overlapping substrings!
             # counts[i] = seq.count(token)
             actual = len(regex.findall(token, seq, overlapped=True))
-            capped = min(actual,KmerCounter.MAX_COUNT)
+            capped = min(actual, self.MAX_COUNT)
             counts[i] = capped
             i += 1
             token=self.next_kmer(token)
         return counts
     def count_by_token(self,seq):
         counts = np.zeros(
-            self.VOCABULARY_SIZE, KmerCounter.COUNT_TYPE)
+            self.get_vocabulary_size(), self.COUNT_TYPE)
         for p in range(len(seq)-self.K+1):
             next_token=seq[p:p+self.K]
             hash_value = self.hash_value(next_token)
             if hash_value is not None:
-                if counts[hash_value]<KmerCounter.MAX_COUNT:
+                if counts[hash_value]<self.MAX_COUNT:
                     counts[hash_value] += 1
         return counts
     def count_by_letter(self,seq):
@@ -104,11 +105,11 @@ class KmerCounter():
         prev_value = None
         next_letter = None
         counts = np.zeros(
-            self.VOCABULARY_SIZE, KmerCounter.COUNT_TYPE)
+            self.get_vocabulary_size, self.COUNT_TYPE)
         for p in range(len(seq)-self.K+1):
             next_letter = seq[p+self.K-1]
             if prev_value is not None and \
-            next_letter in KmerCounter.NUCLEOTIDE_BITS:
+            next_letter in self.NUCLEOTIDE_BITS:
                 hash_value = self.subsequent_value(next_letter,prev_value)
                 prev_value = hash_value
             else:
@@ -116,7 +117,7 @@ class KmerCounter():
                 hash_value = self.hash_value(next_token)
                 prev_value = hash_value
             if hash_value is not None:
-                if counts[hash_value]<KmerCounter.MAX_COUNT:
+                if counts[hash_value]<self.MAX_COUNT:
                     counts[hash_value] += 1
         return counts
     def next_kmer(self,token)->str:
