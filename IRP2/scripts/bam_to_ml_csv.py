@@ -149,13 +149,12 @@ def parse_cigar(cigar,mdstr,quals):
     # parse cigar left to right
     pos = 0
     mquals=''
-    print(cigar)
     while len(cigar)>0:
         match = re.search('^[0-9]+',cigar)
         numstr = match.group(0)
         number = int(numstr)
-        letter = cigar[len(numstr)]
-        cigar = cigar[1+len(numstr):]
+        cigar = cigar[len(numstr):]
+        letter = cigar[0]
         if letter == 'M':  # align but may or may not match
             # Update our qual position and the mquals
             mquals += quals[pos:pos+number]
@@ -170,22 +169,20 @@ def parse_cigar(cigar,mdstr,quals):
                 if quals[pos]==MAXQ:
                     hqins += 1
                 pos += 1
-    print(hqins,hqdel,len(quals),len(mquals))
+        cigar = cigar[1:]
     # parse md string left to right
     pos = 0
     while len(mdstr)>0:
-        print(mdstr)
         if mdstr[0]=='^':  # redundant with cigar D, so ignore it
             mdstr = mdstr[1:]
             while mdstr[0] in BASES:
                 mdstr = mdstr[1:]
-        elif mdstr[0] in DIGITS:
+        elif mdstr[0] in DIGITS: # matched bases, so ignore them
             match = re.search('^[0-9]+',mdstr)
             numstr = match.group(0)
-            number = int(numstr)
-            mdstr = mdstr[1+len(numstr):]
-            pos += number
-        elif mdstr[0] in BASES:
+            pos += int(numstr)
+            mdstr = mdstr[len(numstr):]
+        elif mdstr[0] in BASES: # mismatched bases
             if mquals[pos] == MAXQ:
                 hqmm += 1
             pos += 1
@@ -223,7 +220,8 @@ def process_stdin(parent1,parent2):
         # Insert len = aligned pair's end-to-end span along the transcript.
         # Bowtie makes it negative if mate is upstream of this read.
         SPAN = abs(int(fields[8]))
-        RLEN = len(fields[9])  # read sequence
+        SEQ = fields[9]
+        RLEN = len(SEQ)
         QUALS = fields[10]
 
         # samtools view tab-delimited optional fields appear in any order
@@ -250,11 +248,13 @@ def process_stdin(parent1,parent2):
                 MDSTRING = OPTIONAL_VALUE
         # compute hiqh quality mismatches
         HQMM,HQINS,HQDEL=parse_cigar(CIGAR,MDSTRING,QUALS)
-        # accumulate
+        # save one alignment
         alignment = read_alignment(
             ALIGN_SCORE,EDIT_DIST,
             MISMATCHES,HQMM,
             GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL)
+
+        # Use read ID to determine whether to start a new read group.
         # Here, rely on assumption that inputs are sorted by read ID.
         if read_group is None:
             # start the first read group
@@ -264,7 +264,8 @@ def process_stdin(parent1,parent2):
             read_group.show_if_complete()
             # and start a new read group
             read_group = pair_alignments(RID)
-        # accumulate four alignments per read pair
+
+        # Accumulate alignments grouped by read ID.
         read_group.add_alignment(PARENT,READ,alignment,TID,ALLELE)
         if READ==1:  # same for both reads, arbitrarily use read 1
             read_group.add_parent_span(PARENT,SPAN)
