@@ -1,4 +1,5 @@
 import sys
+import re
 '''
 $ samtools view Primary.bam | python bam_to_ml_csv.py > Primary.csv
 
@@ -27,14 +28,15 @@ MxM is parent 1. SxS is parent 2
 class read_alignment():
     '''Capture one read and its alignment to one transcript.'''
 
-    def __init__(self,score,ed,mm,hqmm,go,ge,hqindel):
+    def __init__(self,score,ed,mm,hqmm,go,ge,hqins,hqdel):
         self.align_score = score
         self.edit_distance = ed
         self.mismatches = mm
         self.high_qual_mismatch = hqmm
         self.gap_opens = go
         self.gap_extends = ge
-        self.high_qual_indel = hqindel
+        self.high_qual_ins = hqins
+        self.high_qual_del = hqdel
 
     def __str__(self):
         s  = str(self.align_score)+','
@@ -43,7 +45,8 @@ class read_alignment():
         s += str(self.high_qual_mismatch)+','
         s += str(self.gap_opens)+','
         s += str(self.gap_extends)+','
-        s += str(self.high_qual_indel)
+        s += str(self.high_qual_ins)+','
+        s += str(self.high_qual_del)
         return s
 
     def __repr__(self):
@@ -121,7 +124,7 @@ class pair_alignments():
         msg += self.targets[0] # assume 4 of the same
         print(msg)
 
-def high_quality_problems(self,mm,ge,cigar,mdstr,quals):
+def parse_cigar(cigar,mdstr,quals):
     '''
     Assume a high-quality mismatch or indel is real,
     while a low-quality mismatch or indel is due to sequencing error.
@@ -131,40 +134,63 @@ def high_quality_problems(self,mm,ge,cigar,mdstr,quals):
     So we consider 'F' high quality and everything else low quality.
     The SAM/BAM format makes quality extraction very difficult.
     Only the cigar captures where the read indels are.
-    Example cigar: 1M2I3M4D5M (1 align, 2 insert, 3 align, 4 delete, 5 align).
+    Example cigar: 1M2I3M4D5M means
+    1 align, 2 extra read bases, 3 align, 4 extra ref bases, 5 align).
     Only the MD str captures where the mismatches are.
-    Example MD str: 5^GA2C5 (5 match, 2 match, 1 mismatch, 5 match).
-    where ^GA are 2 unaligned bases in the ref seq
-    and C is a mismatched base in the ref seq.
+    Example MD str: 5^GA2C5 means
+    5 match, GA in ref only, 2 match, C in ref is mismatch, 5 match.
     '''
-    if mm==0 or len(mdstr)==0 or len(quals)==0:
-        return mm
     hqmm = 0
+    hqins = 0
+    hqdel = 0
     DIGITS = '0123456789'
     BASES = 'ACGT'
-    # TO DO: for every I in cigar, insert F in quals
-    # TO DO: for every D in cigar, delete a qual
-    # Parse the MD string left to right.
-    read_pos = 0
+    MAXQ='F'  # SAM encoding of highest quality score
+    # parse cigar left to right
+    pos = 0
+    mquals=''
+    print(cigar)
+    while len(cigar)>0:
+        match = re.search('^[0-9]+',cigar)
+        numstr = match.group(0)
+        number = int(numstr)
+        letter = cigar[len(numstr)]
+        cigar = cigar[1+len(numstr):]
+        if letter == 'M':  # align but may or may not match
+            # Update our qual position and the mquals
+            mquals += quals[pos:pos+number]
+            pos += number
+        elif letter == 'D':  # letters in ref only
+            # Don't update our qual position or the mquals
+            if quals[pos]==MAXQ and quals[pos+1]==MAXQ:
+                hqdel += number
+        elif letter == 'I':
+            # Do update our qual position, but don't update the mquals
+            for i in range(number):
+                if quals[pos]==MAXQ:
+                    hqins += 1
+                pos += 1
+    print(hqins,hqdel,len(quals),len(mquals))
+    # parse md string left to right
+    pos = 0
     while len(mdstr)>0:
-        chr = mdstr[0]
-        mdstr = mdstr[1:]
-        if chr in DIGITS:
-            numstr = chr
-            while len(mdstr)>0 and chr in DIGITS:
-                chr = mdstr[0]
+        print(mdstr)
+        if mdstr[0]=='^':  # redundant with cigar D, so ignore it
+            mdstr = mdstr[1:]
+            while mdstr[0] in BASES:
                 mdstr = mdstr[1:]
-                numstr += chr
-            read_pos += int(numstr)
-        if chr=='^':
-            while len(mdstr)>0 and chr in BASES:
-                chr = mdstr[0]
-                mdstr = mdstr[1:]
-        if chr in BASES:
-            if quals[read_pos] == 'F':
+        elif mdstr[0] in DIGITS:
+            match = re.search('^[0-9]+',mdstr)
+            numstr = match.group(0)
+            number = int(numstr)
+            mdstr = mdstr[1+len(numstr):]
+            pos += number
+        elif mdstr[0] in BASES:
+            if mquals[pos] == MAXQ:
                 hqmm += 1
-            read_pos += 1
-    return hqmm
+            pos += 1
+            mdstr = mdstr[1:]
+    return hqmm,hqins,hqdel
 
 def process_stdin(parent1,parent2):
     '''Online processing of the output of "samtools view alignments.bam"'''
@@ -223,13 +249,12 @@ def process_stdin(parent1,parent2):
             elif OPTIONAL_FIELD=='MD:Z:':
                 MDSTRING = OPTIONAL_VALUE
         # compute hiqh quality mismatches
-        HQMM=0 # self.high_quality_mismatch(CIGAR,MDSTRING,QUALS)
-        HQINDEL=0
+        HQMM,HQINS,HQDEL=parse_cigar(CIGAR,MDSTRING,QUALS)
         # accumulate
         alignment = read_alignment(
             ALIGN_SCORE,EDIT_DIST,
             MISMATCHES,HQMM,
-            GAP_OPENS,GAP_EXTENDS,HQINDEL)
+            GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL)
         # Here, rely on assumption that inputs are sorted by read ID.
         if read_group is None:
             # start the first read group
