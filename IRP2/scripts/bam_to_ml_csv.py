@@ -108,7 +108,7 @@ class pair_alignments():
 
     def show_if_complete(self):
         if not self._complete_():
-            return
+            return False
         # Show the stats for each alignment (2 reads times 2 parents).
         msg =  str(self.alignments[0])+','
         msg += str(self.alignments[1])+','
@@ -123,6 +123,7 @@ class pair_alignments():
         # Show the stats for the whole read group.
         msg += self.targets[0] # assume 4 of the same
         print(msg)
+        return True
 
 def parse_cigar(cigar,mdstr,quals):
     '''
@@ -144,7 +145,7 @@ def parse_cigar(cigar,mdstr,quals):
     hqins = 0
     hqdel = 0
     DIGITS = '0123456789'
-    BASES = 'ACGT'
+    BASES = 'ACGTNABCDEFGHIJKLMNOPQRSTUVWXYZ'
     MAXQ='F'  # SAM encoding of highest quality score
     # parse cigar left to right
     pos = 0
@@ -172,6 +173,7 @@ def parse_cigar(cigar,mdstr,quals):
         cigar = cigar[1:]
     # parse md string left to right
     pos = 0
+    hold = mdstr
     while len(mdstr)>0:
         if mdstr[0]=='^':  # redundant with cigar D, so ignore it
             mdstr = mdstr[1:]
@@ -187,11 +189,15 @@ def parse_cigar(cigar,mdstr,quals):
                 hqmm += 1
             pos += 1
             mdstr = mdstr[1:]
+        else:
+            raise Exception ('Cannot process mdstr: '+hold)
     return hqmm,hqins,hqdel
 
 def process_stdin(parent1,parent2):
     '''Online processing of the output of "samtools view alignments.bam"'''
     read_group = None
+    printed=0
+    incomplete=0
     for line in sys.stdin:
         # samtools view tab-delimited required fields appear in standard order
         fields=line.strip().split('\t')
@@ -261,7 +267,10 @@ def process_stdin(parent1,parent2):
             read_group = pair_alignments(RID)
         elif RID != read_group.get_rid():
             # finish the previous read group
-            read_group.show_if_complete()
+            if read_group.show_if_complete():
+                printed += 1
+            else:
+                incomplete += 1
             # and start a new read group
             read_group = pair_alignments(RID)
 
@@ -271,9 +280,16 @@ def process_stdin(parent1,parent2):
             read_group.add_parent_span(PARENT,SPAN)
         if PARENT==1:  # same for both parents, arbitrarily use parent 1
             read_group.add_read_length(READ,RLEN)
+
+        # Feedback while running
+        if printed%100000 == 0 or incomplete%100000 == 0 and incomplete>0:
+            print('Progress: Printed %d, Incomplete %d'%(printed,incomplete),file=sys.stderr)
     # finish the last read group
     if read_group is not None:
-        read_group.show_if_complete()
+        if read_group.show_if_complete():
+            printed += 1
+        else:
+            incomplete += 1
         read_group = None
 
 if __name__ == '__main__':
