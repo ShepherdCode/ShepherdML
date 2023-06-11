@@ -66,6 +66,7 @@ class pair_alignments():
         self.targets=[None,None,None,None]
         self.alleles=[None,None,None,None]
         self.alignments=[None,None,None,None]
+        self.primary=None
 
     def _complete_(self):
         '''Insist on 4 alignments covering 1 transcript, 2 parents.'''
@@ -86,6 +87,12 @@ class pair_alignments():
 
     def get_rid(self):
         return self.rid
+
+    def set_primary_parent(self,one_or_two):
+        # This flag could get overwritten if read pair
+        # has primary and secondary alignments to same parent.
+        # Not a problem, as group would be marked incomplete.
+        self.primary = one_or_two
 
     def _index_(self,parent,read):
         # 0=P1R1, 1=P1R2, 2=P2R1, 3=P2R2
@@ -120,7 +127,9 @@ class pair_alignments():
         # Show the stats for each parent (2 parents).
         msg += str(self.parent_spans[0])+','
         msg += str(self.parent_spans[1])+','
-        # Show the stats for the whole read group.
+        # The primary alignment is to parent 1 or 2.
+        msg += str(self.primary)+','
+        # By design, the whole read group aligns to one transcript.
         msg += self.targets[0] # assume 4 of the same
         print(msg)
         return True
@@ -203,10 +212,6 @@ def process_stdin(parent1,parent2):
         fields=line.strip().split('\t')
         RID = fields[0]
         FLAGS = int(fields[1])  # Bitfield of basic info like whether mate aligned.
-        if (FLAGS & 0x100):
-            PRIMARY = 2
-        else:
-            PRIMARY = 1
         if FLAGS & 0x40:
             READ = 1
         else:
@@ -220,6 +225,13 @@ def process_stdin(parent1,parent2):
             PARENT = 2   # e.g. parent SxS
             if ALLELE != parent2:
                 raise Exception('Unrecognized allele: '+ALLELE)
+        if (FLAGS & 0x100):
+            # bit=1 means this is a secondary alignment
+            # this math just flips 1 to 2 or 2 to 1
+            PRIMARY_ALLELE = PARENT%2+1
+        else:
+            PRIMARY_ALLELE = PARENT
+
         REF_POS_THIS = int(fields[3]) # Where read alignment starts.
         CIGAR = fields[5] # Cryptic summary of matches, mismatches, indels.
         REF_POS_MATE = int(fields[7])  # Where mate alignment starts.
@@ -276,6 +288,7 @@ def process_stdin(parent1,parent2):
 
         # Accumulate alignments grouped by read ID.
         read_group.add_alignment(PARENT,READ,alignment,TID,ALLELE)
+        read_group.set_primary_parent(PRIMARY_ALLELE)
         if READ==1:  # same for both reads, arbitrarily use read 1
             read_group.add_parent_span(PARENT,SPAN)
         if PARENT==1:  # same for both parents, arbitrarily use parent 1

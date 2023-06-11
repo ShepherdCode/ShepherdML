@@ -19,4 +19,6 @@ date
 echo "Total read pairs in cvs:"
 wc -l ml_stats.csv
 
+gzip -v ml_stats.csv
+
 date
