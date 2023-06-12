@@ -254,7 +254,8 @@ def process_stdin(parent1,parent2):
             OPTIONAL_VALUE=fields[j][5:]
             if OPTIONAL_FIELD=='AS:i:':
                 ALIGN_SCORE = int(OPTIONAL_VALUE)
-            elif OPTIONAL_FIELD=='XM:i:':
+            elif OPTIONAL_FIELD=='XM:i:' or OPTIONAL_FIELD=='nM:i:' :
+                # Bowtie outputs XM, STAR outputs nM
                 MISMATCHES = int(OPTIONAL_VALUE)
             elif OPTIONAL_FIELD=='XO:i:':
                 GAP_OPENS = int(OPTIONAL_VALUE)
