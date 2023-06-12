@@ -100,9 +100,19 @@ class pair_alignments():
 
     def add_alignment(self,parent,read,alignment,tid,allele):
         index = self._index_(parent,read)
+        if self.alignments[index] is not None:
+            this_AS = alignment.align_score
+            prev_align = self.alignments[index]
+            prev_AS = prev_align.align_score
+            if prev_AS >= this_AS:
+                # No thanks. We already have a better one.
+                # Bowtie best-2 would never do this.
+                # But STAR gives up to 10 aligns per read.
+                return False
         self.alignments[index] = alignment
         self.targets[index] = tid
         self.alleles[index] = allele
+        return True
 
     def add_parent_span(self,parent,span):
         self.parent_spans[parent-1] = span
@@ -288,17 +298,17 @@ def process_stdin(parent1,parent2):
             read_group = pair_alignments(RID)
 
         # Accumulate alignments grouped by read ID.
-        read_group.add_alignment(PARENT,READ,alignment,TID,ALLELE)
-        read_group.set_primary_parent(PRIMARY_ALLELE)
-        if READ==1:  # same for both reads, arbitrarily use read 1
-            read_group.add_parent_span(PARENT,SPAN)
-        if PARENT==1:  # same for both parents, arbitrarily use parent 1
-            read_group.add_read_length(READ,RLEN)
+        if read_group.add_alignment(PARENT,READ,alignment,TID,ALLELE):
+            read_group.set_primary_parent(PRIMARY_ALLELE)
+            if READ==1:  # same for both reads, arbitrarily use read 1
+                read_group.add_parent_span(PARENT,SPAN)
+            if PARENT==1:  # same for both parents, arbitrarily use parent 1
+                read_group.add_read_length(READ,RLEN)
 
         # Feedback while running
         if printed%100000 == 0 or incomplete%100000 == 0 and incomplete>0:
             print('Progress: Printed %d, Incomplete %d'%(printed,incomplete),file=sys.stderr)
-    # finish the last read group
+    # print the last read group
     if read_group is not None:
         if read_group.show_if_complete():
             printed += 1
