@@ -308,32 +308,40 @@ class bam_parser():
                 incomplete += 1
             read_group = None
 
-class read_group_iterator():
-    def __init__(self,bam1,bam2):
-        self.irp_format = False
-        handle1 = pysam.AlignmentFile(bam1, "rb")
-        handle2 = pysam.AlignmentFile(bam2, "rb")
+class bam_file():
+    def __init__(self,filename):
+        handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
         # [E::idx_find_and_load] Could not retrieve index file
         # Pysam gives no way to suppress this.
-        self.iter1 = handle1.fetch(until_eof=True)
-        self.iter2 = handle2.fetch(until_eof=True)
+        print('Error ignored.',file=sys.stderr)
+        self.iterator = handle.fetch(until_eof=True)
+        self.prev_rec = None
+        self.done = False
 
     def __iter__(self):
         return self
 
-    def set_irp_format(self):
-        # IRP appends parent to transcript ID e.g. g100.t1_MxM.
-        # If parent suffix is present, we need to remove it.
-        self.irp_format = True
-
     def __next__(self):
-        try:
-            rec1 = next(self.iter1)
-            rec2 = next(self.iter2)
-        except StopIteration:
-            print('StopIteration')
+        if self.done:
             raise StopIteration()
+        group = []
+        readname = None
+        if self.prev_rec is not None:
+            readname = self.prev_rec.to_string().split('\t')[0]
+            group.append(self.prev_rec)
+        try:
+            while True:
+                self.prev_rec = next(self.iterator)
+                rn = self.prev_rec.to_string().split('\t')[0]
+                if rn==readname:
+                    group.append(self.prev_rec)
+                else:
+                    break  # done this read group
+        except StopIteration:
+            self.prev_rec = None
+            self.done = True  # this will be the last return value
+        return group
 
 def args_parse():
     parser = argparse.ArgumentParser(description='Parse two BAM files in tandem.')
@@ -353,11 +361,9 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    iter = read_group_iterator(args.bam1,args.bam2)
-    if args.irp:
-        iter.set_irp_format()
-    recs = 0
-    for rg in iter:
-        recs += 1
-    print('Records:')
-    print (recs)
+    bf1 = bam_file(args.bam1)
+    bf2 = bam_file(args.bam2)
+    iter1 = iter(bf1)
+    iter2 = iter(bf2)
+    for rg in iter1:
+        print(len(rg))
