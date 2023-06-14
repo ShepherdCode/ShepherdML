@@ -10,7 +10,7 @@ import argparse
 
 class Merger():
     def __init__(self):
-        self.name1='MOM'
+        self.name1=None
         self.oneline=True
     def set_name1_for_defline(self,name):
         self.name1=name
@@ -24,8 +24,9 @@ class Merger():
             # chop any suffix like _pilon_pilon_pilon
             if pilons > 0:
                 revised = original[:pilons]
-            # append the name
-            revised = revised + '_' + name + '\n'
+            if self.name1 is not None:
+                # append the name
+                revised = revised + '_' + name + '\n'
         return revised
     def _process(self,outstream,instream,name):
         num_deflines = 0
