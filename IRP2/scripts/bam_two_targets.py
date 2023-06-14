@@ -8,6 +8,10 @@ $ samtools sort -n -T . -@ 4 -o Sorted.M.bam Primary.M.bam
 $ samtools sort -n -T . -@ 4 -o Sorted.S.bam Primary.S.bam
 $ python bam_two_targets.py > ml_stats.csv
 
+Although pysam can return the group of alignments for a read,
+that requires a bam index and random access.
+We prefer to sort both bam files and stream them in tandem.
+
 For testing, use a reproducible 0.1% subset (seed 123).
 $ samtools view -bo subset.M.bam -s 123.001 Sorted.M.bam
 '''
@@ -200,34 +204,6 @@ class cigar_parser():
         return hqmm,hqins,hqdel
 
 class bam_parser():
-    def __init__(self,bam1,bam2):
-        self.bam1=bam1
-        self.bam2=bam2
-        self.irp_format = False
-
-    def set_irp_format(self):
-        # IRP appends parent to transcript ID e.g. g100.t1_MxM.
-        # If parent suffix is present, we need to remove it.
-        self.irp_format = True
-
-    def parse_tandem(self):
-        handle1 = pysam.AlignmentFile(self.bam1, "rb")
-        handle2 = pysam.AlignmentFile(self.bam2, "rb")
-        # Fetch puts error message on console, like
-        # [E::idx_find_and_load] Could not retrieve index file
-        # Pysam gives no way to suppress this.
-        iter1 = handle1.fetch(until_eof=True)
-        iter2 = handle2.fetch(until_eof=True)
-        recs = 0
-        try:
-            while True:
-                read1 = next(iter1)
-                read2 = next(iter2)
-                recs += 1
-        except StopIteration:
-            print('StopIteration')
-        print(recs)
-
     def parse_line(self):
         '''Online processing of the output of "samtools view alignments.bam"'''
         read_group = None
@@ -332,6 +308,33 @@ class bam_parser():
                 incomplete += 1
             read_group = None
 
+class read_group_iterator():
+    def __init__(self,bam1,bam2):
+        self.irp_format = False
+        handle1 = pysam.AlignmentFile(bam1, "rb")
+        handle2 = pysam.AlignmentFile(bam2, "rb")
+        # Fetch puts error message on console, like
+        # [E::idx_find_and_load] Could not retrieve index file
+        # Pysam gives no way to suppress this.
+        self.iter1 = handle1.fetch(until_eof=True)
+        self.iter2 = handle2.fetch(until_eof=True)
+
+    def __iter__(self):
+        return self
+
+    def set_irp_format(self):
+        # IRP appends parent to transcript ID e.g. g100.t1_MxM.
+        # If parent suffix is present, we need to remove it.
+        self.irp_format = True
+
+    def __next__(self):
+        try:
+            rec1 = next(self.iter1)
+            rec2 = next(self.iter2)
+        except StopIteration:
+            print('StopIteration')
+            raise StopIteration()
+
 def args_parse():
     parser = argparse.ArgumentParser(description='Parse two BAM files in tandem.')
     parser.add_argument('bam1', help='Reads aligned to parent 1 (BAM)', type=str)
@@ -350,7 +353,11 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    bp = bam_parser(args.bam1,args.bam2)
+    iter = read_group_iterator(args.bam1,args.bam2)
     if args.irp:
-        bp.set_irp_format()
-    bp.parse_tandem()
+        iter.set_irp_format()
+    recs = 0
+    for rg in iter:
+        recs += 1
+    print('Records:')
+    print (recs)
