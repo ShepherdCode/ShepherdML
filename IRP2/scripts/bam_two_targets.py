@@ -309,6 +309,10 @@ class bam_parser():
             read_group = None
 
 class bam_file():
+    '''
+    This is an iterator that streams one bam file.
+    Each next() returns the alignment group for one read pair.
+    '''
     def __init__(self,filename):
         handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
@@ -323,6 +327,7 @@ class bam_file():
         return self
 
     def __next__(self):
+        '''Returns a list of pysam alignment records.'''
         if self.done:
             raise StopIteration()
         group = []
@@ -334,14 +339,45 @@ class bam_file():
             while True:
                 self.prev_rec = next(self.iterator)
                 rn = self.prev_rec.to_string().split('\t')[0]
+                if readname is None:
+                    readname = rn
                 if rn==readname:
                     group.append(self.prev_rec)
                 else:
-                    break  # done this read group
+                    # We read past this group.
+                    # Return this group
+                    # but hold onto prev rec.
+                    break
         except StopIteration:
             self.prev_rec = None
-            self.done = True  # this will be the last return value
+            self.done = True  # return a group for the last time
         return group
+
+class tandem_file_walker():
+    def __init__(self,bamfile1,bamfile2):
+        bf1 = bam_file(bamfile1)
+        bf2 = bam_file(bamfile2)
+        self.iter1 = iter(bf1)
+        self.iter2 = iter(bf2)
+
+    def go(self):
+        '''Assume records are sorted by read ID.'''
+        try:
+            while True:
+                group1 = next(self.iter1)
+                rn1 = group1[0].to_string().split('\t')[0]
+                group2 = next(self.iter2)
+                rn2 = group2[0].to_string().split('\t')[0]
+                while rn1 != rn2:
+                    if rn1 < rn2:
+                        group1 = next(self.iter1)
+                        rn1 = group1[0].to_string().split('\t')[0]
+                    if rn2 < rn1:
+                        group2 = next(self.iter2)
+                        rn2 = group1[0].to_string().split('\t')[0]
+                print(rn1,len(group1),rn2,len(group2))
+        except:
+            print('done')
 
 def args_parse():
     parser = argparse.ArgumentParser(description='Parse two BAM files in tandem.')
@@ -361,9 +397,5 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    bf1 = bam_file(args.bam1)
-    bf2 = bam_file(args.bam2)
-    iter1 = iter(bf1)
-    iter2 = iter(bf2)
-    for rg in iter1:
-        print(len(rg))
+    tfw=tandem_file_walker(args.bam1,args.bam2)
+    tfw.go()
