@@ -18,7 +18,9 @@ $ samtools view -bo subset.M.bam -s 123.001 Sorted.M.bam
 class read_alignment():
     '''Capture one read and its alignment to one transcript.'''
 
-    def __init__(self,score,ed,mm,hqmm,go,ge,hqins,hqdel):
+    def __init__(self,read,score,ed,mm,hqmm,go,ge,hqins,hqdel,prim,rlen,span):
+        # Most fields are integers
+        self.read = read # 1 or 2
         self.align_score = score
         self.edit_distance = ed
         self.mismatches = mm
@@ -27,6 +29,13 @@ class read_alignment():
         self.gap_extends = ge
         self.high_qual_ins = hqins
         self.high_qual_del = hqdel
+        self.primary = prim  # True or False
+        self.rlen = rlen # length of one read in bases
+        self.span = span # length of the pair projection on the transcript
+
+    def is_primary(self):
+        # Aligners mark some alignments as secondary.
+        return prim
 
     def __str__(self):
         s  = str(self.align_score)+','
@@ -54,37 +63,38 @@ class pair_alignments():
         self.read_lengths=[None,None] # invariant for 2 parents
         self.parent_spans=[None,None] # invariant for 2 reads
         self.targets=[None,None,None,None]
-        self.alleles=[None,None,None,None]
         self.alignments=[None,None,None,None]
-        self.primary=None
 
-    def _complete_(self):
+    def is_complete(self):
         '''Insist on 4 alignments covering 1 transcript, 2 parents.'''
         if None in self.read_lengths: return False
         if None in self.parent_spans: return False
         if None in self.targets: return False
-        if None in self.alleles: return False
         if None in self.alignments: return False
         if not (
             self.targets[0]==self.targets[1] and
             self.targets[0]==self.targets[2] and
-            self.targets[0]==self.targets[3] and
-            self.alleles[0]==self.alleles[1] and
-            self.alleles[2]==self.alleles[3] and
-            self.alleles[0]!=self.alleles[2] ):
+            self.targets[0]==self.targets[3] ):
             return False
         return True
 
     def get_rid(self):
         return self.rid
 
-    def set_primary_parent(self,one_or_two):
-        # This flag could get overwritten if read pair
-        # has primary and secondary alignments to same parent.
-        # Not a problem, as group would be marked incomplete.
-        self.primary = one_or_two
+    def get_preferred_parent(self):
+        # Identify the target with the higher combined alignment score.
+        if not self.is_complete():
+            return 0
+        as1 = self.alignments[0].align_score+self.alignments[1].align_score
+        as2 = self.alignments[2].align_score+self.alignments[3].align_score
+        if as1==as2:
+            return 0
+        elif as1>as2:
+            return 1
+        return 2
 
     def _index_(self,parent,read):
+        # Choose list position.
         # 0=P1R1, 1=P1R2, 2=P2R1, 3=P2R2
         return (parent-1)*2 + (read-1)
 
@@ -104,38 +114,40 @@ class pair_alignments():
         self.alleles[index] = allele
         return True
 
-    def add_parent_span(self,parent,span):
-        self.parent_spans[parent-1] = span
-
-    def add_read_length(self,read,length):
-        self.read_lengths[read-1] = length
-
     def __str__(self):
         return self.rid
 
-    def show_if_complete(self):
-        if not self._complete_():
-            return False
-        # Show the stats for each alignment (2 reads times 2 parents).
-        msg =  str(self.alignments[0])+','
-        msg += str(self.alignments[1])+','
-        msg += str(self.alignments[2])+','
-        msg += str(self.alignments[3])+','
-        # Show the stats for each read pair (2 pairs).
-        msg += str(self.read_lengths[0])+','
-        msg += str(self.read_lengths[1])+','
-        # Show the stats for each parent (2 parents).
-        msg += str(self.parent_spans[0])+','
-        msg += str(self.parent_spans[1])+','
-        # The primary alignment is to parent 1 or 2.
-        msg += str(self.primary)+','
-        # By design, the whole read group aligns to one transcript.
-        msg += self.targets[0] # assume 4 of the same
-        print(msg)
-        return True
+    def show(self):
+        if self.is_complete():
+            # Show the stats for each alignment (2 reads times 2 parents).
+            msg =  str(self.alignments[0])+','
+            msg += str(self.alignments[1])+','
+            msg += str(self.alignments[2])+','
+            msg += str(self.alignments[3])+','
+            # Assume same for first read pair and second read pair.
+            msg += str(self.alignments[0].rlen)+','
+            msg += str(self.alignments[1].rlen)+','
+            # Assume same span given for both reads of a pair.
+            msg += str(self.alignments[0].span)+','
+            msg += str(self.alignments[2].span)+','
+            # The primary alignment is to parent 1 or 2 (or 0 undecided).
+            msg += str(self.primary)+','
+            # By design, the whole read group aligns to one transcript.
+            msg += self.targets[0] # assume 4 of the same
+            print(msg)
+            return True
+        return False
 
-class cigar_parser():
-    def parse_cigar(cigar,mdstr,quals):
+class pair_maker():
+    '''
+    Convert
+    from group of alignments (sam read pair, many targets)
+    to a pair_alignments (two comparable alignments).
+    '''
+    def __init__(self,irp=False):
+        self.irp = irp
+
+    def parse_cigar(self,cigar,mdstr,quals):
         '''
         Assume a high-quality mismatch or indel is real,
         while a low-quality mismatch or indel is due to sequencing error.
@@ -203,110 +215,77 @@ class cigar_parser():
                 raise Exception ('Cannot process mdstr: '+hold)
         return hqmm,hqins,hqdel
 
-class bam_parser():
-    def parse_line(self):
-        '''Online processing of the output of "samtools view alignments.bam"'''
-        read_group = None
-        printed=0
-        incomplete=0
-        for line in sys.stdin:
-            # samtools view tab-delimited required fields appear in standard order
-            fields=line.strip().split('\t')
-            RID = fields[0]
-            FLAGS = int(fields[1])  # Bitfield of basic info like whether mate aligned.
-            if FLAGS & 0x40:
-                READ = 1
-            else:
-                READ = 2
-            # Parse transcript ID like jg27855.t1_SxS i.e. transcript.suffix_allele
-            TID,SUFFIX = fields[2].split('.')
-            ALLELE = SUFFIX.split('_')[1]
-            if ALLELE==parent1:
-                PARENT = 1   # e.g. parent MxM
-            else:
-                PARENT = 2   # e.g. parent SxS
-                if ALLELE != parent2:
-                    raise Exception('Unrecognized allele: '+ALLELE)
-            if (FLAGS & 0x100):
-                # bit=1 means this is a secondary alignment
-                # this math just flips 1 to 2 or 2 to 1
-                PRIMARY_ALLELE = PARENT%2+1
-            else:
-                PRIMARY_ALLELE = PARENT
+    def make_pair(self,group1,group2):
+        pa = pair_alignments()
+        for record in group1:
+            aln = parse_line(record.to_string())
+            if aln.is_primary():
+                pa.add_alignment(aln)
+        for record in group2:
+            aln = parse_line(record.to_string())
+            if aln.is_primary():
+                pa.add_alignment(aln)
+        return pa
 
-            REF_POS_THIS = int(fields[3]) # Where read alignment starts.
-            CIGAR = fields[5] # Cryptic summary of matches, mismatches, indels.
-            REF_POS_MATE = int(fields[7])  # Where mate alignment starts.
-            # Insert len = aligned pair's end-to-end span along the transcript.
-            # Bowtie makes it negative if mate is upstream of this read.
-            SPAN = abs(int(fields[8]))
-            SEQ = fields[9]
-            RLEN = len(SEQ)
-            QUALS = fields[10]
-
-            # samtools view tab-delimited optional fields appear in any order
-            ALIGN_SCORE = -1000 # In case none provided, assume a very negative score.
-            MISMATCHES = 0
-            GAP_OPENS = 0
-            GAP_EXTENDS = 0
-            EDIT_DIST = 0
-            MDSTRING = ''
-            for j in range(11,len(fields)):
-                OPTIONAL_FIELD=fields[j][:5]
-                OPTIONAL_VALUE=fields[j][5:]
-                if OPTIONAL_FIELD=='AS:i:':
-                    ALIGN_SCORE = int(OPTIONAL_VALUE)
-                elif OPTIONAL_FIELD=='XM:i:' or OPTIONAL_FIELD=='nM:i:' :
-                    # Bowtie outputs XM, STAR outputs nM
-                    MISMATCHES = int(OPTIONAL_VALUE)
-                elif OPTIONAL_FIELD=='XO:i:':
-                    GAP_OPENS = int(OPTIONAL_VALUE)
-                elif OPTIONAL_FIELD=='XG:i:':
-                    GAP_EXTENDS = int(OPTIONAL_VALUE)
-                elif OPTIONAL_FIELD=='NM:i:':
-                    EDIT_DIST = int(OPTIONAL_VALUE)
-                elif OPTIONAL_FIELD=='MD:Z:':
-                    MDSTRING = OPTIONAL_VALUE
-            # compute hiqh quality mismatches
-            HQMM,HQINS,HQDEL=parse_cigar(CIGAR,MDSTRING,QUALS)
-            # save one alignment
-            alignment = read_alignment(
-                ALIGN_SCORE,EDIT_DIST,
-                MISMATCHES,HQMM,
-                GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL)
-
-            # Use read ID to determine whether to start a new read group.
-            # Here, rely on assumption that inputs are sorted by read ID.
-            if read_group is None:
-                # start the first read group
-                read_group = pair_alignments(RID)
-            elif RID != read_group.get_rid():
-                # finish the previous read group
-                if read_group.show_if_complete():
-                    printed += 1
-                else:
-                    incomplete += 1
-                # and start a new read group
-                read_group = pair_alignments(RID)
-
-            # Accumulate alignments grouped by read ID.
-            if read_group.add_alignment(PARENT,READ,alignment,TID,ALLELE):
-                read_group.set_primary_parent(PRIMARY_ALLELE)
-                if READ==1:  # same for both reads, arbitrarily use read 1
-                    read_group.add_parent_span(PARENT,SPAN)
-                if PARENT==1:  # same for both parents, arbitrarily use parent 1
-                    read_group.add_read_length(READ,RLEN)
-
-            # Feedback while running
-            if printed%100000 == 0 or incomplete%100000 == 0 and incomplete>0:
-                print('Progress: Printed %d, Incomplete %d'%(printed,incomplete),file=sys.stderr)
-        # print the last read group
-        if read_group is not None:
-            if read_group.show_if_complete():
-                printed += 1
-            else:
-                incomplete += 1
-            read_group = None
+    def parse_line(self,line):
+        '''Process one line of `samtools view alignments.bam` '''
+        # samtools view tab-delimited required fields appear in standard order
+        fields=line.strip().split('\t')
+        # bit=1 means this is a secondary alignment
+        RID = fields[0]
+        FLAGS = int(fields[1])  # Bitfield of basic info like whether mate aligned.
+        PRIMARY = not (FLAGS & 0x100):
+        READ = 2
+        if FLAGS & 0x40:
+            READ = 1
+        TID = fields[2]
+        if self.irp:
+            # Fasta files from the IRP1 pipeline have parent suffixes like tid100_MxM.
+            # We strip the suffix to use same tid in both parents.
+            TID = TID.split('_')[0]
+        REF_POS_THIS = int(fields[3]) # Where read alignment starts.
+        CIGAR = fields[5] # Cryptic summary of matches, mismatches, indels.
+        REF_POS_MATE = int(fields[7])  # Where mate alignment starts.
+        # Insert len = aligned pair's end-to-end span along the transcript.
+        # Bowtie makes it negative if mate is upstream of this read.
+        SPAN = abs(int(fields[8]))
+        SEQ = fields[9]
+        RLEN = len(SEQ)
+        QUALS = fields[10]
+        # Loop through SAM's optional fields.
+        # (We require certain ones even though SAM does not.)
+        # samtools view tab-delimited optional fields appear in any order
+        ALIGN_SCORE = -1000 # In case none provided, assume a very negative score.
+        MISMATCHES = 0
+        GAP_OPENS = 0
+        GAP_EXTENDS = 0
+        EDIT_DIST = 0
+        MDSTRING = ''
+        for j in range(11,len(fields)):
+            OPTIONAL_FIELD=fields[j][:5]
+            OPTIONAL_VALUE=fields[j][5:]
+            if OPTIONAL_FIELD=='AS:i:':
+                ALIGN_SCORE = int(OPTIONAL_VALUE)
+            elif OPTIONAL_FIELD=='XM:i:' or OPTIONAL_FIELD=='nM:i:' :
+                # Bowtie outputs XM, STAR outputs nM
+                MISMATCHES = int(OPTIONAL_VALUE)
+            elif OPTIONAL_FIELD=='XO:i:':
+                GAP_OPENS = int(OPTIONAL_VALUE)
+            elif OPTIONAL_FIELD=='XG:i:':
+                GAP_EXTENDS = int(OPTIONAL_VALUE)
+            elif OPTIONAL_FIELD=='NM:i:':
+                EDIT_DIST = int(OPTIONAL_VALUE)
+            elif OPTIONAL_FIELD=='MD:Z:':
+                MDSTRING = OPTIONAL_VALUE
+        # compute hiqh quality mismatches
+        HQMM,HQINS,HQDEL=parse_cigar(CIGAR,MDSTRING,QUALS)
+        # save one alignment
+        alignment = read_alignment(
+            READ,ALIGN_SCORE,EDIT_DIST,
+            MISMATCHES,HQMM,
+            GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL,
+            RLEN,SPAN)
+        return alignment
 
 class bam_file():
     '''
@@ -359,23 +338,31 @@ class tandem_file_walker():
         bf2 = bam_file(bamfile2)
         self.iter1 = iter(bf1)
         self.iter2 = iter(bf2)
+        self.irp = False
+
+    def set_IRP_mode(self):
+        self.irp = True
 
     def go(self):
         '''Assume records are sorted by read ID.'''
+        maker = pair_maker(self.irp)
         try:
-            while True:
+            while True:  # till EOF in either file
                 group1 = next(self.iter1)
                 rn1 = group1[0].to_string().split('\t')[0]
                 group2 = next(self.iter2)
                 rn2 = group2[0].to_string().split('\t')[0]
-                while rn1 != rn2:
+                while rn1 != rn2: # advance cursors in tandem
                     if rn1 < rn2:
                         group1 = next(self.iter1)
                         rn1 = group1[0].to_string().split('\t')[0]
                     if rn2 < rn1:
                         group2 = next(self.iter2)
                         rn2 = group1[0].to_string().split('\t')[0]
-                print(rn1,len(group1),rn2,len(group2))
+                #print(rn1,len(group1),rn2,len(group2))
+                maker = pm.make_pair(group1,group2)
+                if pa.is_complete:
+                    pa.show()
         except:
             print('done')
 
@@ -398,4 +385,6 @@ if __name__ == '__main__':
         else:
             print('Consider running with --debug')
     tfw=tandem_file_walker(args.bam1,args.bam2)
+    if args.irp:
+        tfw.set_IRP_mode()
     tfw.go()
