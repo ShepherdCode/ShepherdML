@@ -392,7 +392,7 @@ class tandem_file_walker():
         except StopIteration:
             # No need to special case the last read because
             # our parsers raise the exception AFTER last read.
-            print('Total',total)
+            print('Total %d'%total, file=sys.stderr)
 
 def args_parse():
     parser = argparse.ArgumentParser(description='Parse two BAM files in tandem.')
