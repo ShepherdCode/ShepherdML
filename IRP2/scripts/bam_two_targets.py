@@ -18,9 +18,14 @@ $ samtools view -bo subset.M.bam -s 123.001 Sorted.M.bam
 class read_alignment():
     '''Capture one read and its alignment to one transcript.'''
 
-    def __init__(self,read,score,ed,mm,hqmm,go,ge,hqins,hqdel,prim,rlen,span):
-        # Most fields are integers
-        self.read = read # 1 or 2
+    def __init__(self,rid,tid,read_num,
+    score,ed,mm,hqmm,go,ge,hqins,hqdel,prim,rlen,span):
+        self.rid = rid # long string
+        self.tid = tid # string containing gene or transcript name
+        # BAM files contain a flag for primary or secondary alignment
+        self.primary = prim  # True or False
+        # these fields are integers
+        self.read_num = read_num # 1 or 2
         self.align_score = score
         self.edit_distance = ed
         self.mismatches = mm
@@ -29,15 +34,11 @@ class read_alignment():
         self.gap_extends = ge
         self.high_qual_ins = hqins
         self.high_qual_del = hqdel
-        self.primary = prim  # True or False
         self.rlen = rlen # length of one read in bases
         self.span = span # length of the pair projection on the transcript
 
-    def is_primary(self):
-        # Aligners mark some alignments as secondary.
-        return prim
-
     def __str__(self):
+        # This method supports the main reporting feature of this program.
         s  = str(self.align_score)+','
         s += str(self.edit_distance)+','
         s += str(self.mismatches)+','
@@ -56,70 +57,76 @@ class read_alignment():
             for k,v in self.hash.items():
                 fout.write('%s,%d\n'%(k,v))
 
-class pair_alignments():
-    '''Capture 4 alignments of a read pair.'''
-    def __init__(self,rid):
-        self.rid=rid  # invariant for 4 reads in group
-        self.read_lengths=[None,None] # invariant for 2 parents
-        self.parent_spans=[None,None] # invariant for 2 reads
-        self.targets=[None,None,None,None]
-        self.alignments=[None,None,None,None]
+class four_alignments():
+    '''
+    Capture 4 best alignments of 1 read pair to 1 target in 2 parents.
+    Input groups are lists of instances of read_alignment.
+    Both groups should concern the same readname ie read pair.
+    Both groups should concern the same target in different parents.
+    Together, the two groups should be exhaustive for the readname.
+    '''
+    def __init__(self,group1,group2):
+        self.alignments=[None,None,None,None] # order P1R1,P1R2,P2R1,P2R2
+        for record in group1:
+            self.add_alignment(1, record) # keeps the 4 best
+        for record in group2:
+            self.add_alignment(2, record) # keep the 4 best
+
+    def add_alignment(self,parent,alignment):
+        '''
+        Retain the best by alignment score.
+        Retain at most 4 alignments: P1R1,P1R2,P2R1,P2R2.
+        Insist that all alignments concern same read and target.
+        '''
+        if not alignment.primary:
+            # No thanks. We don't want secondary alignments.
+            return False
+        # Choose list position.
+        # 0=P1R1, 1=P1R2, 2=P2R1, 3=P2R2
+        read_num = alignment.read_num
+        index = (parent-1)*2 + (read_num-1)
+        if self.alignments[index] is not None:
+            this_AS = alignment.align_score
+            prev_AS = self.alignments[index].align_score
+            if prev_AS >= this_AS:
+                # No thanks. We already have a better one.
+                # This should never happen.
+                # Configure each aligner to chose ONE primary target,
+                # so we get consistency within a read pair.
+                # Force the aligner to break ties.
+                # Do not use the STAR option to mark ties all primary.
+                return False
+        # Ok, store this alignment as one-of-four.
+        self.alignments[index] = alignment
+        return True
 
     def is_complete(self):
         '''Insist on 4 alignments covering 1 transcript, 2 parents.'''
-        if None in self.read_lengths: return False
-        if None in self.parent_spans: return False
-        if None in self.targets: return False
-        if None in self.alignments: return False
-        if not (
-            self.targets[0]==self.targets[1] and
-            self.targets[0]==self.targets[2] and
-            self.targets[0]==self.targets[3] ):
+        if None in self.alignments:
+            return False
+        same_tid=self.alignments[0].tid
+        if self.alignments[1].tid != same_tid or \
+            self.alignments[2].tid != same_tid or \
+            self.alignments[3].tid != same_tid:
             return False
         return True
 
-    def get_rid(self):
-        return self.rid
-
     def get_preferred_parent(self):
-        # Identify the target with the higher combined alignment score.
+        # Identify the parent with the higher combined alignment score.
         if not self.is_complete():
             return 0
-        as1 = self.alignments[0].align_score+self.alignments[1].align_score
-        as2 = self.alignments[2].align_score+self.alignments[3].align_score
-        if as1==as2:
+        sum_score_1 = self.alignments[0].align_score+self.alignments[1].align_score
+        sum_score_2 = self.alignments[2].align_score+self.alignments[3].align_score
+        if sum_score_1==sum_score_2:
             return 0
-        elif as1>as2:
+        elif sum_score_1>sum_score_2:
             return 1
-        return 2
-
-    def _index_(self,parent,read):
-        # Choose list position.
-        # 0=P1R1, 1=P1R2, 2=P2R1, 3=P2R2
-        return (parent-1)*2 + (read-1)
-
-    def add_alignment(self,parent,read,alignment,tid,allele):
-        index = self._index_(parent,read)
-        if self.alignments[index] is not None:
-            this_AS = alignment.align_score
-            prev_align = self.alignments[index]
-            prev_AS = prev_align.align_score
-            if prev_AS >= this_AS:
-                # No thanks. We already have a better one.
-                # Bowtie best-2 would never do this.
-                # But STAR gives up to 10 aligns per read.
-                return False
-        self.alignments[index] = alignment
-        self.targets[index] = tid
-        self.alleles[index] = allele
-        return True
-
-    def __str__(self):
-        return self.rid
+        return 2  # sum_score_1<sum_score_2
 
     def show(self):
+        # This method implements the main reporting feature of this program.
         if self.is_complete():
-            # Show the stats for each alignment (2 reads times 2 parents).
+            # Stats for each alignment (2 reads times 2 parents).
             msg =  str(self.alignments[0])+','
             msg += str(self.alignments[1])+','
             msg += str(self.alignments[2])+','
@@ -130,20 +137,16 @@ class pair_alignments():
             # Assume same span given for both reads of a pair.
             msg += str(self.alignments[0].span)+','
             msg += str(self.alignments[2].span)+','
-            # The primary alignment is to parent 1 or 2 (or 0 undecided).
-            msg += str(self.primary)+','
+            # Preferred is parent 1 or 2 (or 0 undecided).
+            msg += str(self.get_preferred_parent())+','
             # By design, the whole read group aligns to one transcript.
-            msg += self.targets[0] # assume 4 of the same
-            print(msg)
-            return True
+            msg += self.alignments[0].tid # assume 4 of the same
+
+            print(msg) # TO DO: redirect to file
+            return True  # enable caller to count outputs
         return False
 
-class pair_maker():
-    '''
-    Convert
-    from group of alignments (sam read pair, many targets)
-    to a pair_alignments (two comparable alignments).
-    '''
+class bam_line_parser():
     def __init__(self,irp=False):
         self.irp = irp
 
@@ -167,10 +170,12 @@ class pair_maker():
         hqins = 0
         hqdel = 0
         DIGITS = '0123456789'
+        # Start with common letters for efficiency, but include whole alphabet.
         BASES = 'ACGTNABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        MAXQ='F'  # SAM encoding of highest quality score
-        # parse cigar left to right
+        MAXQ='F'  # SAM ASCII encoding of highest quality score, 37.
+        # Start at position 0 and parse cigar left to right.
         pos = 0
+        # Modify the quality string if cigar specifies indels.
         mquals=''
         while len(cigar)>0:
             match = re.search('^[0-9]+',cigar)
@@ -215,29 +220,21 @@ class pair_maker():
                 raise Exception ('Cannot process mdstr: '+hold)
         return hqmm,hqins,hqdel
 
-    def make_pair(self,group1,group2):
-        pa = pair_alignments()
-        for record in group1:
-            aln = parse_line(record.to_string())
-            if aln.is_primary():
-                pa.add_alignment(aln)
-        for record in group2:
-            aln = parse_line(record.to_string())
-            if aln.is_primary():
-                pa.add_alignment(aln)
-        return pa
-
-    def parse_line(self,line):
-        '''Process one line of `samtools view alignments.bam` '''
-        # samtools view tab-delimited required fields appear in standard order
-        fields=line.strip().split('\t')
+    def parse_line(self,fields):
+        '''
+        Process one record of a BAM file.
+        Assume record has been converted to string and split on tabs,
+        similar to samtools view | split('\t').
+        Return an instance of read_alignment.
+        '''
         # bit=1 means this is a secondary alignment
         RID = fields[0]
         FLAGS = int(fields[1])  # Bitfield of basic info like whether mate aligned.
-        PRIMARY = not (FLAGS & 0x100):
-        READ = 2
+        # We don't need any secondary alignments.
+        PRIMARY = not (FLAGS & 0x100)
+        READ_NUM = 2
         if FLAGS & 0x40:
-            READ = 1
+            READ_NUM = 1
         TID = fields[2]
         if self.irp:
             # Fasta files from the IRP1 pipeline have parent suffixes like tid100_MxM.
@@ -278,19 +275,19 @@ class pair_maker():
             elif OPTIONAL_FIELD=='MD:Z:':
                 MDSTRING = OPTIONAL_VALUE
         # compute hiqh quality mismatches
-        HQMM,HQINS,HQDEL=parse_cigar(CIGAR,MDSTRING,QUALS)
+        HQMM,HQINS,HQDEL=self.parse_cigar(CIGAR,MDSTRING,QUALS)
         # save one alignment
         alignment = read_alignment(
-            READ,ALIGN_SCORE,EDIT_DIST,
-            MISMATCHES,HQMM,
-            GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL,
-            RLEN,SPAN)
+            RID,TID,READ_NUM,ALIGN_SCORE,EDIT_DIST,
+            MISMATCHES,HQMM,GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL,
+            PRIMARY,RLEN,SPAN)
         return alignment
 
-class bam_file():
+class bam_file_parser():
     '''
     This is an iterator that streams one bam file.
-    Each next() returns the alignment group for one read pair.
+    Each next() returns a list of alignments for one readname.
+    Each alignment is an instance of read_alignment.
     '''
     def __init__(self,filename):
         handle = pysam.AlignmentFile(filename, "rb")
@@ -299,72 +296,98 @@ class bam_file():
         # Pysam gives no way to suppress this.
         print('Error ignored.',file=sys.stderr)
         self.iterator = handle.fetch(until_eof=True)
-        self.prev_rec = None
+        self.prev_aln = None
         self.done = False
+        self.line_parser = bam_line_parser()
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        '''Returns a list of pysam alignment records.'''
         if self.done:
             raise StopIteration()
-        group = []
+        group = []  # list of alignments
         readname = None
-        if self.prev_rec is not None:
-            readname = self.prev_rec.to_string().split('\t')[0]
-            group.append(self.prev_rec)
+        if self.prev_aln is not None:
+            # We previously streamed first record of next group.
+            # Now, that record starts this new group.
+            readname = self.prev_aln.rid
+            group.append(self.prev_aln)
         try:
             while True:
-                self.prev_rec = next(self.iterator)
-                rn = self.prev_rec.to_string().split('\t')[0]
+                pysam_record = next(self.iterator)
+                # Pysam provides a python-style data structure.
+                # It differs from 'samtools view' in several ways,
+                # including 0-based positions and quality scores.
+                # For equivalence with 'samtools view',
+                # we convert the pysam record to list of string
+                # and parse those strings.
+                fields = pysam_record.to_string().split('\t')
+                # Convert strings to instance of read_alignment.
+                self.prev_aln = self.line_parser.parse_line(fields)
+                rn = self.prev_aln.rid
                 if readname is None:
+                    # Special case: first record in the file
                     readname = rn
                 if rn==readname:
-                    group.append(self.prev_rec)
+                    # Add this alignment to our group and continue streaming.
+                    group.append(self.prev_aln)
                 else:
-                    # We read past this group.
-                    # Return this group
-                    # but hold onto prev rec.
+                    # We streamed too far. Return the group that we have.
+                    # Hold onto prev_rec for next time.
                     break
         except StopIteration:
-            self.prev_rec = None
+            self.prev_aln = None
             self.done = True  # return a group for the last time
         return group
 
 class tandem_file_walker():
+    '''
+    Stream two BAM files in tandem.
+    Apply a bam_file_parser to each file.
+    Collect all the BAM records from both files pertaining to one readname.
+    That is, all the alignments for one read pair.
+    Pass each collection to four_alignments for processing.
+    '''
     def __init__(self,bamfile1,bamfile2):
-        bf1 = bam_file(bamfile1)
-        bf2 = bam_file(bamfile2)
-        self.iter1 = iter(bf1)
-        self.iter2 = iter(bf2)
+        bf1 = bam_file_parser(bamfile1)
+        bf2 = bam_file_parser(bamfile2)
+        self.parser1 = iter(bf1)
+        self.parser2 = iter(bf2)
         self.irp = False
 
     def set_IRP_mode(self):
         self.irp = True
 
     def go(self):
-        '''Assume records are sorted by read ID.'''
-        maker = pair_maker(self.irp)
+        '''
+        Extract records from two BAM files, one for each parent.
+        Assume BAM records are sorted by readname.
+        Maintain a curcor in each BAM file.
+        Advance both cursors to the next readname common to both files.
+        Load and process all the lines containing that readname.
+        '''
+        total = 0
         try:
-            while True:  # till EOF in either file
-                group1 = next(self.iter1)
-                rn1 = group1[0].to_string().split('\t')[0]
-                group2 = next(self.iter2)
-                rn2 = group2[0].to_string().split('\t')[0]
+            while True:  # loop till EOF in either file
+                group1 = next(self.parser1)
+                rn1 = group1[0].rid
+                group2 = next(self.parser2)
+                rn2 = group2[0].rid
                 while rn1 != rn2: # advance cursors in tandem
                     if rn1 < rn2:
-                        group1 = next(self.iter1)
-                        rn1 = group1[0].to_string().split('\t')[0]
+                        group1 = next(self.parser1)
+                        rn1 = group1[0].rid
                     if rn2 < rn1:
-                        group2 = next(self.iter2)
-                        rn2 = group1[0].to_string().split('\t')[0]
-                #print(rn1,len(group1),rn2,len(group2))
-                maker = pm.make_pair(group1,group2)
-                if pa.is_complete:
-                    pa.show()
-        except:
-            print('done')
+                        group2 = next(self.parser2)
+                        rn2 = group2[0].rid
+                pair = four_alignments(group1,group2)
+                if pair.show():
+                    total += 1
+        except StopIteration:
+            # No need to special case the last read because
+            # our parsers raise the exception AFTER last read.
+            print('Total',total)
 
 def args_parse():
     parser = argparse.ArgumentParser(description='Parse two BAM files in tandem.')
