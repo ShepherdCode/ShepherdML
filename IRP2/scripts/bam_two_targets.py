@@ -144,6 +144,14 @@ class four_alignments():
 
             print(msg) # TO DO: redirect to file
             return True  # enable caller to count outputs
+        else:
+            # For debugging, explain why this is incomplete
+            #print(self.alignments[0])
+            #print(self.alignments[1])
+            #print(self.alignments[2])
+            #print(self.alignments[3])
+            #raise Exception
+            pass
         return False
 
 class bam_line_parser():
@@ -289,7 +297,7 @@ class bam_file_parser():
     Each next() returns a list of alignments for one readname.
     Each alignment is an instance of read_alignment.
     '''
-    def __init__(self,filename):
+    def __init__(self,filename,irp=False):
         handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
         # [E::idx_find_and_load] Could not retrieve index file
@@ -298,7 +306,7 @@ class bam_file_parser():
         self.iterator = handle.fetch(until_eof=True)
         self.prev_aln = None
         self.done = False
-        self.line_parser = bam_line_parser()
+        self.line_parser = bam_line_parser(irp)
 
     def __iter__(self):
         return self
@@ -349,15 +357,12 @@ class tandem_file_walker():
     That is, all the alignments for one read pair.
     Pass each collection to four_alignments for processing.
     '''
-    def __init__(self,bamfile1,bamfile2):
-        bf1 = bam_file_parser(bamfile1)
-        bf2 = bam_file_parser(bamfile2)
+    def __init__(self,bamfile1,bamfile2,irp=False):
+        bf1 = bam_file_parser(bamfile1,irp)
+        bf2 = bam_file_parser(bamfile2,irp)
         self.parser1 = iter(bf1)
         self.parser2 = iter(bf2)
         self.irp = False
-
-    def set_IRP_mode(self):
-        self.irp = True
 
     def go(self):
         '''
@@ -407,7 +412,5 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    tfw=tandem_file_walker(args.bam1,args.bam2)
-    if args.irp:
-        tfw.set_IRP_mode()
+    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp)
     tfw.go()
