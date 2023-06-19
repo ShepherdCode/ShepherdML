@@ -50,21 +50,21 @@ def write_fasta(infilename,outfilename,allele):
                             # Write tid of best match in lyrata just for tracking
                             hid = tid
                             lid = map_H_to_L[tid]
-                            defline = '>'+hid+'_halleri '+lid+'\n'
+                            defline = '>'+hid+' halleri matches lyrata:'+lid+'\n'
                     else:
                         if tid in map_L_to_H.keys():
                             # Use tid of best match in halleri to emphasize same gene
-                            # Write original lyrata tid just for tacking 
+                            # Write original lyrata tid just for tacking
                             hid = map_L_to_H[tid]
-                            defline = '>'+hid+'_lyrata '+tid+'\n'
+                            defline = '>'+hid+' lyrata matches halleri:'+tid+'\n'
                     if defline is not None:
-                        # We intentionally remove newlines from sequence 
+                        # We intentionally remove newlines from sequence
                         fout.write(defline) # start next sequence
                 else:
                     if defline is not None:
                         fout.write(line)  # more sequence
             # end last sequence
-            if defline is not None:            
+            if defline is not None:
                 fout.write('\n')
                 defline = None
 
