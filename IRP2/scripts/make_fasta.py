@@ -1,79 +1,119 @@
 '''
 Write two fasta files.
-One for lyrata, one for halleri.
 Both have the same number of sequences.
 Each sequence in one has exactly one match in the other.
 Both IDs are recorded in each defline.
 For ease of processing, remove internal newlines from sequences.
 '''
 
-map_L_to_H = dict()
-map_H_to_L = dict()
-match_file = 'best_matches.lyrata_len_halleri.txt'
-
-def load_matches(filename):
+def load_best(filename):
+    best_forward = dict()
+    best_reverse = dict()
     with open (filename,'r') as fin:
         for line in fin:
             line=line.strip()
             fields=line.split('\t')
-            L = fields[0]
-            length = fields[1]
-            H = fields[2]
-            map_L_to_H[L]=H
-            map_H_to_L[H]=L
+            acov1=fields[7]
+            acov2=fields[8]
+            tid1=fields[9]
+            tid2=fields[10]
+            alignment1=(acov1,tid2)
+            alignment2=(acov2,tid1)
+            if tid1 not in best_forward.keys():
+                best_forward[tid1]=alignment1
+            else:
+                prev = best_forward[tid1]
+                if prev is not None:
+                    if prev[0]==alignment1[0]:
+                        #print('Exclude tie',prev,alignment1)
+                        best_forward[tid1] = None # exclude genes with ties
+                    elif prev[0] < alignment1[0]:
+                        best_forward[tid1] = alignment1
+            if tid2 not in best_reverse.keys():
+                best_reverse[tid2]=alignment2
+            else:
+                prev = best_reverse[tid2]
+                if prev is not None:
+                    if prev[0] == alignment2[0]:
+                        #print('Exclude tie',prev,alignment2)
+                        best_reverse[tid2] = None # exclude genes with ties
+                    elif prev[0] < alignment2[0]:
+                        best_reverse[tid2] = alignment2
+    return best_forward,best_reverse
 
-load_matches(match_file)
+def require_reflection(dic1,dic2):
+    kills = list()
+    for	orig in dic1.keys():
+        if dic1[orig] is None:
+            kills.append(orig)
+        else:
+            fwd_len,fwd_tid = dic1[orig]
+            if fwd_tid not in dic2.keys():
+                kills.append(orig)
+            elif dic2[fwd_tid] is None:
+                kills.append(orig)
+            else:
+                rev_len,rev_tid = dic2[fwd_tid]
+                if rev_tid != orig:
+                    kills.append(orig)
+    for k in kills:
+        dic1.pop(k)
 
-#print('Just testing:')
-#test_L = 'scaffold_81700001.1'
-#print(test_L, 'maps to', map_L_to_H[test_L])
-#test_H = 'g10924.t1'
-#print(test_H, 'maps to', map_H_to_L[test_H])
+best_forward,best_reverse = load_best('B6_D2.coords')
+require_reflection(best_forward,best_reverse)
+require_reflection(best_reverse,best_forward)
+
+def scrub(dic):
+    new_dict = dict()
+    for k in dic:
+        (alen,tid) = dic[k]
+        new_dict[k]=tid
+    return new_dict
+
+map_B_to_D = scrub(best_forward)
+map_D_to_B = scrub(best_reverse)
+
 
 def write_fasta(infilename,outfilename,allele):
     with open (infilename,'r') as fin:
         with open (outfilename,'w') as fout:
-            first_line = True
-            defline = None
+            defline_count = 0
+            is_defline = False
+            write_this = False
             for line in fin:
                 line=line.strip()
-                if line.startswith('>'):
-                    if defline is not None:
-                        if first_line:
-                            first_line=False
-                        else:
-                            fout.write('\n') # end prev sequence
-                    defline = None
+                is_defline = line.startswith('>')
+                if is_defline:
                     tid = line.split(' ')[0][1:]
-                    if allele=='halleri':
-                        if tid in map_H_to_L.keys():
-                            # Write tid of best match in lyrata just for tracking
-                            hid = tid
-                            lid = map_H_to_L[tid]
-                            defline = '>'+hid+' halleri matches lyrata:'+lid+'\n'
-                    else:
-                        if tid in map_L_to_H.keys():
-                            # Use tid of best match in halleri to emphasize same gene
-                            # Write original lyrata tid just for tacking
-                            hid = map_L_to_H[tid]
-                            defline = '>'+hid+' lyrata matches halleri:'+tid+'\n'
-                    if defline is not None:
-                        # We intentionally remove newlines from sequence
+                    # For both strains, write B tid plus D tid for tracking
+                    write_this = False
+                    if allele=='B6' and tid in map_B_to_D.keys():
+                            match = map_B_to_D[tid]
+                            defline = '>'+tid+' matches '+match+'\n'
+                            write_this = True
+                    if allele=='D2' and tid in map_D_to_B.keys():
+                            match = map_D_to_B[tid]
+                            defline = '>'+tid+' matches '+match+'\n'
+                            write_this = True
+                    if write_this:
+                        if defline_count>0:
+                            fout.write('\n') # end prev sequence
                         fout.write(defline) # start next sequence
-                else:
-                    if defline is not None:
-                        fout.write(line)  # more sequence
+                        defline_count += 1
+                elif write_this:
+                    fout.write(line)  # sequence continuation
             # end last sequence
-            if defline is not None:
-                fout.write('\n')
-                defline = None
+            if write_this:
+                fout.write('\n') # end the last sequence
+    print('Wrote %d sequences' % defline_count)
 
-print('Writing lyrata...')
-lyrata_in = 'Arabidopsis_lyrata.v.1.0.cdna.all.fa'
-lyrata_out = 'lyrata.fasta'
-write_fasta(lyrata_in,lyrata_out,'lyrata')
-print('Writing halleri...')
-halleri_in = 'Arabidopsis_halleri.Ahal2.2.cdna.all.fa'
-halleri_out = 'halleri.fasta'
-write_fasta(halleri_in,halleri_out,'halleri')
-print('Wrote two fasta files.')
+if True:
+    print('Writing B6...')
+    B6_in = 'B6.cdna.all.fa'
+    B6_out = 'B6.fasta'
+    write_fasta(B6_in,B6_out,'B6')
+    print('Writing D2...')
+    D2_in = 'D2.cdna.all.fa'
+    D2_out = 'D2.fasta'
+    write_fasta(D2_in,D2_out,'D2')
+    print('Wrote two fasta files.')
