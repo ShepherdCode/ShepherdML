@@ -186,20 +186,27 @@ class bam_line_parser():
         hqins = 0
         hqdel = 0
         DIGITS = '0123456789'
-        # Start with common letters for efficiency, but include whole alphabet.
-        BASES = 'ACGTNABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        # ACGT indicates reference letter, different from read.
+        # M aligns, could be match or mismatch
+        # I read has extra bases not in reference
+        # D reference has extra bases not in read
+        # N reference has intron not in read
+        # S soft clip a read end - skip these
+        # H hard clip - read as shown was trimmed before alignment
+        # P padding - the reference bases are just padding
+        BASES = 'ACGTABCDEFGHIJKLMNOPQRSTUVWXYZ'
         MAXQ='F'  # SAM ASCII encoding of highest quality score, 37.
         # Start at position 0 and parse cigar left to right.
         pos = 0
         # Modify the quality string if cigar specifies indels.
-        mquals=''
+        mquals=''  # accumulate and save this for the MD string parse
         while len(cigar)>0:
             match = re.search('^[0-9]+',cigar)
             numstr = match.group(0)
             number = int(numstr)
             cigar = cigar[len(numstr):]
             letter = cigar[0]
-            if letter == 'M':  # align but may or may not match
+            if letter == 'M' or letter == 'S':  # align but may or may not match
                 # Update our qual position and the mquals
                 mquals += quals[pos:pos+number]
                 pos += number
@@ -213,6 +220,8 @@ class bam_line_parser():
                     if quals[pos]==MAXQ:
                         hqins += 1
                     pos += 1
+            elif letter == 'N': # intron
+                pass
             cigar = cigar[1:]
         # parse md string left to right
         pos = 0
@@ -228,6 +237,7 @@ class bam_line_parser():
                 pos += int(numstr)
                 mdstr = mdstr[len(numstr):]
             elif mdstr[0] in BASES: # mismatched bases
+                # We count even soft clipped bases, which bowtie ignores
                 if mquals[pos] == MAXQ:
                     hqmm += 1
                 pos += 1
