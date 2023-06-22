@@ -71,12 +71,16 @@ class four_alignments():
             self.add_alignment(1, record) # keeps the 4 best
         for record in group2:
             self.add_alignment(2, record) # keep the 4 best
+        self.different_targets = False
+
+    def allow_different_targets(self):
+        self.different_targets = True
 
     def add_alignment(self,parent,alignment):
         '''
         Retain the best by alignment score.
         Retain at most 4 alignments: P1R1,P1R2,P2R1,P2R2.
-        Insist that all alignments concern same read and target.
+        Insist that all alignments concern same read.
         '''
         if not alignment.primary:
             # No thanks. We don't want secondary alignments.
@@ -101,14 +105,17 @@ class four_alignments():
         return True
 
     def is_complete(self):
-        '''Insist on 4 alignments covering 1 transcript, 2 parents.'''
         if None in self.alignments:
+            # Insist on 4 alignments.
+            # Implicitly, this requires 2 aligns to 2 parents.
             return False
-        same_tid=self.alignments[0].tid
-        if self.alignments[1].tid != same_tid or \
-            self.alignments[2].tid != same_tid or \
-            self.alignments[3].tid != same_tid:
-            return False
+        if not self.different_targets:
+            # Insist on 4 alignments to same gene (in different genomes)
+            same_tid=self.alignments[0].tid
+            if self.alignments[1].tid != same_tid or \
+                self.alignments[2].tid != same_tid or \
+                self.alignments[3].tid != same_tid:
+                return False
         return True
 
     def get_preferred_parent(self):
@@ -139,8 +146,9 @@ class four_alignments():
             msg += str(self.alignments[2].span)+','
             # Preferred is parent 1 or 2 (or 0 undecided).
             msg += str(self.get_preferred_parent())+','
-            # By design, the whole read group aligns to one transcript.
-            msg += self.alignments[0].tid # assume 4 of the same
+            # This feature is only meaningful if
+            # self.require_same_target==True
+            msg += self.alignments[0].tid
 
             print(msg) # TO DO: redirect to file
             return True  # enable caller to count outputs
@@ -297,7 +305,7 @@ class bam_file_parser():
     Each next() returns a list of alignments for one readname.
     Each alignment is an instance of read_alignment.
     '''
-    def __init__(self,filename,irp=False):
+    def __init__(self,filename,irp=False,diff=False):
         handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
         # [E::idx_find_and_load] Could not retrieve index file
@@ -357,12 +365,13 @@ class tandem_file_walker():
     That is, all the alignments for one read pair.
     Pass each collection to four_alignments for processing.
     '''
-    def __init__(self,bamfile1,bamfile2,irp=False):
-        bf1 = bam_file_parser(bamfile1,irp)
-        bf2 = bam_file_parser(bamfile2,irp)
+    def __init__(self,bamfile1,bamfile2,irp=False,diff=False):
+        bf1 = bam_file_parser(bamfile1,irp,diff)
+        bf2 = bam_file_parser(bamfile2,irp,diff)
         self.parser1 = iter(bf1)
         self.parser2 = iter(bf2)
-        self.irp = False
+        self.irp = irp
+        self.diff = diff
 
     def go(self):
         '''
@@ -387,6 +396,8 @@ class tandem_file_walker():
                         group2 = next(self.parser2)
                         rn2 = group2[0].rid
                 pair = four_alignments(group1,group2)
+                if self.diff:
+                    pair.allow_different_targets()
                 if pair.show():
                     total += 1
         except StopIteration:
@@ -399,6 +410,7 @@ def args_parse():
     parser.add_argument('bam1', help='Reads aligned to parent 1 (BAM)', type=str)
     parser.add_argument('bam2', help='Reads aligned to parent 2 (BAM)', type=str)
     parser.add_argument('--irp', help='Expect allele in transcript ID', action='store_true')
+    parser.add_argument('--diff', help='Allow different target per parent', action='store_true')
     parser.add_argument('--debug', action='store_true')
     return parser.parse_args()  # on error, program exits
 
@@ -412,5 +424,5 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp)
+    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp,args.diff)
     tfw.go()
