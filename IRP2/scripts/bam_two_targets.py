@@ -163,8 +163,9 @@ class four_alignments():
         return False
 
 class bam_line_parser():
-    def __init__(self,irp=False):
+    def __init__(self,irp=False,maxq):
         self.irp = irp
+        self.MAXQ=maxq  # SAM ASCII encoding of highest quality score.
 
     def parse_cigar(self,cigar,mdstr,quals):
         '''
@@ -172,8 +173,8 @@ class bam_line_parser():
         while a low-quality mismatch or indel is due to sequencing error.
         Use the clue provided by the base call quality score.
         Although scores have 256 values, we'll use a binary representation.
-        Most scores are the maximum value, encoded as 'F'.
-        So we consider 'F' high quality and everything else low quality.
+        Most scores by far are the maximum value, encoded as 'K'.
+        So we consider that high quality and everything else low quality.
         The SAM/BAM format makes quality extraction very difficult.
         Only the cigar captures where the read indels are.
         Example cigar: 1M2I3M4D5M means
@@ -195,7 +196,7 @@ class bam_line_parser():
         # H hard clip - read as shown was trimmed before alignment
         # P padding - the reference bases are just padding
         BASES = 'ACGTABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        MAXQ='F'  # SAM ASCII encoding of highest quality score, 37.
+        MAXQ=self.MAXQ  # SAM ASCII encoding of highest quality score.
         # Start at position 0 and parse cigar left to right.
         pos = 0
         # Modify the quality string if cigar specifies indels.
@@ -315,7 +316,7 @@ class bam_file_parser():
     Each next() returns a list of alignments for one readname.
     Each alignment is an instance of read_alignment.
     '''
-    def __init__(self,filename,irp=False,diff=False):
+    def __init__(self,filename,irp=False,maxq):
         handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
         # [E::idx_find_and_load] Could not retrieve index file
@@ -324,7 +325,7 @@ class bam_file_parser():
         self.iterator = handle.fetch(until_eof=True)
         self.prev_aln = None
         self.done = False
-        self.line_parser = bam_line_parser(irp)
+        self.line_parser = bam_line_parser(irp,maxq)
 
     def __iter__(self):
         return self
@@ -375,9 +376,9 @@ class tandem_file_walker():
     That is, all the alignments for one read pair.
     Pass each collection to four_alignments for processing.
     '''
-    def __init__(self,bamfile1,bamfile2,irp=False,diff=False):
-        bf1 = bam_file_parser(bamfile1,irp,diff)
-        bf2 = bam_file_parser(bamfile2,irp,diff)
+    def __init__(self,bamfile1,bamfile2,maxq,irp=False,diff=False):
+        bf1 = bam_file_parser(bamfile1,irp,maxq)
+        bf2 = bam_file_parser(bamfile2,irp,maxq)
         self.parser1 = iter(bf1)
         self.parser2 = iter(bf2)
         self.irp = irp
@@ -421,6 +422,7 @@ def args_parse():
     parser.add_argument('bam2', help='Reads aligned to parent 2 (BAM)', type=str)
     parser.add_argument('--irp', help='Expect allele in transcript ID', action='store_true')
     parser.add_argument('--diff', help='Allow different target per parent', action='store_true')
+    parser.add_argument('--maxq', help='Max quality encoding (K)', default='K')
     parser.add_argument('--debug', action='store_true')
     return parser.parse_args()  # on error, program exits
 
@@ -434,5 +436,9 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp,args.diff)
+    print('BAM file 1:',args.bam1)
+    print('BAM file 2:',ARGS.bam2)
+    print('Allow different targets?',args.diff)
+    print('Maximum quality encoding:',args.maxq)
+    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp,args.diff,args.maxq)
     tfw.go()
