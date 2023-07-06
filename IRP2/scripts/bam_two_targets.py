@@ -19,7 +19,7 @@ class read_alignment():
     '''Capture one read and its alignment to one transcript.'''
 
     def __init__(self,rid,tid,read_num,
-    score,ed,mm,hqmm,go,ge,hqins,hqdel,prim,rlen,span):
+    score,ed,mm,hqmm,go,ge,hqins,hqdel,ins,dels,mat,prim,rlen,span):
         self.rid = rid # long string
         self.tid = tid # string containing gene or transcript name
         # BAM files contain a flag for primary or secondary alignment
@@ -34,6 +34,9 @@ class read_alignment():
         self.gap_extends = ge
         self.high_qual_ins = hqins
         self.high_qual_del = hqdel
+        self.insertions = ins
+        self.deletions = dels
+        self.matches = mat
         self.rlen = rlen # length of one read in bases
         self.span = span # length of the pair projection on the transcript
 
@@ -41,10 +44,13 @@ class read_alignment():
         # This method supports the main reporting feature of this program.
         s  = str(self.align_score)+','
         s += str(self.edit_distance)+','
+        s += str(self.matches)+','
         s += str(self.mismatches)+','
         s += str(self.high_qual_mismatch)+','
         s += str(self.gap_opens)+','
         s += str(self.gap_extends)+','
+        s += str(self.insertions)+','
+        s += str(self.deletions)+','
         s += str(self.high_qual_ins)+','
         s += str(self.high_qual_del)
         return s
@@ -186,6 +192,9 @@ class bam_line_parser():
         hqmm = 0
         hqins = 0
         hqdel = 0
+        insertions = 0
+        deletions = 0
+        matches = 0
         DIGITS = '0123456789'
         # ACGT indicates reference letter, different from read.
         # M aligns, could be match or mismatch
@@ -213,12 +222,16 @@ class bam_line_parser():
                 pos += number
             elif letter == 'D':  # letters in ref only
                 # Don't update our qual position or the mquals
+                deletions += number
                 if quals[pos]==MAXQ and quals[pos+1]==MAXQ:
+                    # Require high quality calls on both sides of deletion
                     hqdel += number
-            elif letter == 'I':
+            elif letter == 'I':   # letters in read only
                 # Do update our qual position, but don't update the mquals
+                insertions += number
                 for i in range(number):
                     if quals[pos]==MAXQ:
+                        # Require high quality at inserted base
                         hqins += 1
                     pos += 1
             elif letter == 'N': # intron
@@ -232,20 +245,24 @@ class bam_line_parser():
                 mdstr = mdstr[1:]
                 while mdstr[0] in BASES:
                     mdstr = mdstr[1:]
-            elif mdstr[0] in DIGITS: # matched bases, so ignore them
+            elif mdstr[0] in DIGITS: # matched bases
                 match = re.search('^[0-9]+',mdstr)
                 numstr = match.group(0)
-                pos += int(numstr)
+                number = int(numstr)
+                pos += number
+                matches += number
                 mdstr = mdstr[len(numstr):]
             elif mdstr[0] in BASES: # mismatched bases
-                # We count even soft clipped bases, which bowtie ignores
+                # Redundant with MM field, so mostly ignore this
+                # This counts even soft clipped bases, which bowtie AS ignores
                 if mquals[pos] == MAXQ:
+                    # Require high quality score at mismatched base
                     hqmm += 1
                 pos += 1
                 mdstr = mdstr[1:]
             else:
                 raise Exception ('Cannot process mdstr: '+hold)
-        return hqmm,hqins,hqdel
+        return hqmm,hqins,hqdel,insertions,deletions,matches
 
     def parse_line(self,fields):
         '''
@@ -302,11 +319,12 @@ class bam_line_parser():
             elif OPTIONAL_FIELD=='MD:Z:':
                 MDSTRING = OPTIONAL_VALUE
         # compute hiqh quality mismatches
-        HQMM,HQINS,HQDEL=self.parse_cigar(CIGAR,MDSTRING,QUALS)
+        HQMM,HQINS,HQDEL,INS,DELS,MAT=self.parse_cigar(CIGAR,MDSTRING,QUALS)
         # save one alignment
         alignment = read_alignment(
             RID,TID,READ_NUM,ALIGN_SCORE,EDIT_DIST,
             MISMATCHES,HQMM,GAP_OPENS,GAP_EXTENDS,HQINS,HQDEL,
+            INS,DELS,MAT,
             PRIMARY,RLEN,SPAN)
         return alignment
 
