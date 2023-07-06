@@ -163,9 +163,9 @@ class four_alignments():
         return False
 
 class bam_line_parser():
-    def __init__(self,irp=False,maxq):
-        self.irp = irp
-        self.MAXQ=maxq  # SAM ASCII encoding of highest quality score.
+    def __init__(self,irp,maxq):
+        self.irp = irp  # boolean
+        self.MAXQ=maxq  # SAM ASCII encoding of highest quality score ('K').
 
     def parse_cigar(self,cigar,mdstr,quals):
         '''
@@ -316,7 +316,7 @@ class bam_file_parser():
     Each next() returns a list of alignments for one readname.
     Each alignment is an instance of read_alignment.
     '''
-    def __init__(self,filename,irp=False,maxq):
+    def __init__(self,filename,irp,maxq):
         handle = pysam.AlignmentFile(filename, "rb")
         # Fetch puts error message on console, like
         # [E::idx_find_and_load] Could not retrieve index file
@@ -376,7 +376,7 @@ class tandem_file_walker():
     That is, all the alignments for one read pair.
     Pass each collection to four_alignments for processing.
     '''
-    def __init__(self,bamfile1,bamfile2,maxq,irp=False,diff=False):
+    def __init__(self,bamfile1,bamfile2,irp,diff,maxq):
         bf1 = bam_file_parser(bamfile1,irp,maxq)
         bf2 = bam_file_parser(bamfile2,irp,maxq)
         self.parser1 = iter(bf1)
@@ -436,9 +436,6 @@ if __name__ == '__main__':
             print(traceback.format_exc())
         else:
             print('Consider running with --debug')
-    print('BAM file 1:',args.bam1)
-    print('BAM file 2:',ARGS.bam2)
-    print('Allow different targets?',args.diff)
-    print('Maximum quality encoding:',args.maxq)
-    tfw=tandem_file_walker(args.bam1,args.bam2,args.irp,args.diff,args.maxq)
+    tfw=tandem_file_walker(args.bam1,args.bam2,
+        args.irp,args.diff,args.maxq)
     tfw.go()
